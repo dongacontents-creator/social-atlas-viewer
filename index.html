@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사회과 부도 보기 · 통계 자료 검색하기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* -- warm atlas-paper palette (light) -- */
+    --bg: #f5efdf;
+    --bg-wash: #efe6cf;
+    --surface: #fffdf7;
+    --surface-soft: #ecf5f3;
+    --text: #1d2e30;
+    --text-soft: #63767a;
+    --primary: #1c7691;
+    --primary-deep: #0c3a4d;
+    --primary-contrast: #ffffff;
+    --accent: #d9622f;
+    --accent-soft: #f8ddc7;
+    --gold: #dba53c;
+    --silver: #b7c3c6;
+    --bronze: #c68a58;
+    --border: #e4dbc3;
+    --active-bg: #d7eef1;
+    --shadow: 0 10px 28px rgba(12,58,77,.12);
+    --shadow-sm: 0 3px 10px rgba(12,58,77,.08);
+
+    /* continent hues (used consistently, not decorative) */
+    --c-asia: #d9723f;
+    --c-europe: #4f8fb0;
+    --c-africa: #c99a3a;
+    --c-namerica: #5f9e73;
+    --c-samerica: #a2638f;
+    --c-oceania: #3fa6a1;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1b20;
+      --bg-wash: #0a1519;
+      --surface: #16282d;
+      --surface-soft: #1b3136;
+      --text: #eef4f1;
+      --text-soft: #9db0b3;
+      --primary: #5cb7d4;
+      --primary-deep: #0a2430;
+      --primary-contrast: #04141a;
+      --accent: #ef8a5a;
+      --accent-soft: #3a2417;
+      --gold: #edc06a;
+      --silver: #93a3a6;
+      --bronze: #c99566;
+      --border: #274044;
+      --active-bg: #1e3d42;
+      --shadow: 0 10px 28px rgba(0,0,0,.45);
+      --shadow-sm: 0 3px 10px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1b20;
+    --bg-wash: #0a1519;
+    --surface: #16282d;
+    --surface-soft: #1b3136;
+    --text: #eef4f1;
+    --text-soft: #9db0b3;
+    --primary: #5cb7d4;
+    --primary-deep: #0a2430;
+    --primary-contrast: #04141a;
+    --accent: #ef8a5a;
+    --accent-soft: #3a2417;
+    --gold: #edc06a;
+    --silver: #93a3a6;
+    --bronze: #c99566;
+    --border: #274044;
+    --active-bg: #1e3d42;
+    --shadow: 0 10px 28px rgba(0,0,0,.45);
+    --shadow-sm: 0 3px 10px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 100% 0%, var(--bg-wash) 0%, transparent 45%),
+      radial-gradient(circle at 0% 100%, var(--bg-wash) 0%, transparent 40%);
+    background-attachment: fixed;
+    color: var(--text);
+  }
+  h1, h2, h3, .display-face { font-family: 'Jua', 'Apple SD Gothic Neo', sans-serif; }
+
+  button { font-family: inherit; }
+
+  /* ---- 사이트 헤더 ---- */
+  .site-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    background: var(--primary-deep);
+    color: var(--primary-contrast);
+  }
+  .site-head .globe {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    background: var(--accent);
+    flex: none;
+  }
+  .site-head h1 {
+    font-size: 18px;
+    letter-spacing: .3px;
+  }
+  .site-head p {
+    font-size: 12px;
+    opacity: .72;
+    font-family: 'Gowun Dodum', sans-serif;
+  }
+
+  /* ---- 최상단 메인 탭 ---- */
+  .main-nav { display: flex; width: 100%; gap: 2px; background: var(--primary-deep); }
+  .nav-btn {
+    flex: 1; border: none; padding: 18px 10px; font-size: 17px;
+    font-family: 'Jua', sans-serif; letter-spacing: .2px;
+    cursor: pointer; color: rgba(255,255,255,.55);
+    background: transparent;
+    border-bottom: 4px solid transparent;
+    transition: color .15s ease, background .15s ease;
+  }
+  .nav-btn:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.05); }
+  .nav-btn.active {
+    color: #ffffff;
+    background: var(--primary);
+    border-bottom-color: var(--accent);
+  }
+
+  .app-body { padding: 26px 32px 52px; min-height: calc(100vh - 122px); max-width: 1320px; margin: 0 auto; }
+  .view-section { display: none; }
+  .view-section.active { display: block; }
+
+  /* ---- PDF 뷰어 ---- */
+  .pdf-stage { position: relative; }
+  .pdf-mat {
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px;
+  }
+  .pdf-scroll {
+    overflow: auto;
+    max-height: 70vh;
+    border-radius: 10px;
+    scrollbar-color: var(--primary) transparent;
+  }
+  .pdf-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+  .pdf-scroll::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+  .pdf-scroll::-webkit-scrollbar-track { background: transparent; }
+  .pdf-scroll img {
+    display: block;
+    margin: 0 auto;
+    height: auto;           /* 원본 비율 유지: 가로만 지정하고 세로는 비율에 맞춰 자동 계산 */
+    max-width: none;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .pdf-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 46px; height: 46px; border-radius: 50%; border: none;
+    background: var(--surface); color: var(--primary-deep);
+    box-shadow: var(--shadow-sm);
+    font-size: 16px; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .12s ease, background .12s ease;
+  }
+  .pdf-arrow:hover:not(:disabled) { background: var(--accent); color: #fff; transform: translateY(-50%) scale(1.06); }
+  .pdf-arrow:disabled { opacity: .3; cursor: not-allowed; }
+  .pdf-arrow.left { left: -4px; }
+  .pdf-arrow.right { right: -4px; }
+
+  .pdf-zoom-row {
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    margin-top: 18px;
+    font-family: 'Jua', sans-serif;
+  }
+  .zoom-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: none;
+    background: var(--surface); color: var(--primary-deep);
+    border: 1px solid var(--border);
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .12s ease, color .12s ease;
+  }
+  .zoom-btn:hover { background: var(--primary); color: #fff; }
+  .zoom-label { color: var(--text); font-size: 14px; min-width: 48px; text-align: center; }
+  .page-label {
+    color: var(--primary-deep); font-size: 13px; min-width: 56px; text-align: center;
+    background: var(--active-bg); border-radius: 20px; padding: 8px 4px;
+  }
+  .pdf-hint { text-align: center; font-size: 12px; color: var(--text-soft); margin-top: 10px; }
+
+  /* ---- 통계 자료 검색하기 : 공통 상단 행 ---- */
+  .stats-top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+  .sub-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sub-btn {
+    padding: 11px 22px; border-radius: 22px; border: 1.5px solid var(--border);
+    background: var(--surface); color: var(--text-soft);
+    font-family: 'Jua', sans-serif; font-size: 14px; cursor: pointer;
+    transition: all .14s ease;
+  }
+  .sub-btn:hover { border-color: var(--primary); color: var(--primary-deep); }
+  .sub-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+  .search-box {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 24px; padding: 11px 20px; width: 100%; max-width: 420px;
+    transition: border-color .14s ease, box-shadow .14s ease;
+  }
+  .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--active-bg); }
+  .search-box input { flex: 1; border: none; outline: none; font-size: 14.5px; color: var(--text); background: transparent; font-family: inherit; }
+  .search-box input::placeholder { color: var(--text-soft); }
+  .search-box .icon { color: var(--primary); font-size: 15px; }
+
+  /* ---- 목록 보기 ---- */
+  .list-layout { display: flex; gap: 18px; align-items: flex-start; }
+  .continent-side { display: flex; flex-direction: column; gap: 10px; flex: 0 0 176px; }
+  .cnt-btn {
+    position: relative;
+    padding: 13px 14px 13px 34px; border-radius: 14px; border: 1.5px solid var(--border);
+    background: var(--surface); color: var(--text); text-align: left;
+    font-family: 'Jua', sans-serif; font-size: 15px; cursor: pointer;
+    transition: all .14s ease;
+  }
+  .cnt-btn::before {
+    content: ""; position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    width: 9px; height: 9px; border-radius: 50%; background: var(--dot);
+  }
+  .cnt-btn[data-cont="아시아"] { --dot: var(--c-asia); }
+  .cnt-btn[data-cont="유럽"] { --dot: var(--c-europe); }
+  .cnt-btn[data-cont="아프리카"] { --dot: var(--c-africa); }
+  .cnt-btn[data-cont="북아메리카"] { --dot: var(--c-namerica); }
+  .cnt-btn[data-cont="남아메리카"] { --dot: var(--c-samerica); }
+  .cnt-btn[data-cont="오세아니아"] { --dot: var(--c-oceania); }
+  .cnt-btn:hover { border-color: var(--primary); }
+  .cnt-btn.active { background: var(--active-bg); border-color: var(--primary); color: var(--primary-deep); }
+  .cnt-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .country-list-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; max-height: 480px; overflow-y: auto;
+    flex: 0 0 250px; box-shadow: var(--shadow-sm);
+  }
+  .country-item { padding: 12px 16px; font-size: 14.5px; color: var(--text); cursor: pointer; border-bottom: 1px solid var(--border); }
+  .country-item:last-child { border-bottom: none; }
+  .country-item:hover { background: var(--surface-soft); }
+  .country-item.active { background: var(--active-bg); color: var(--primary-deep); font-weight: 700; }
+  .list-empty-msg { padding: 30px 16px; font-size: 13.5px; color: var(--text-soft); text-align: center; }
+
+  .detail-panel { display: flex; flex-direction: column; gap: 14px; flex: 1 1 auto; min-width: 0; }
+  .detail-table-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-sm);
+  }
+  table.detail-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  table.detail-table th {
+    background: var(--surface-soft); padding: 13px 10px; font-weight: 700;
+    text-align: center; color: var(--text-soft); font-size: 12.5px; letter-spacing: .3px;
+  }
+  table.detail-table td { padding: 15px 10px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .map-placeholder {
+    background: var(--surface-soft); border: 1px dashed var(--border);
+    border-radius: 14px; flex: 1; min-height: 320px;
+    display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center;
+    color: var(--text-soft); font-size: 15px; font-family: 'Jua', sans-serif;
+  }
+  .map-placeholder .pin { font-size: 26px; }
+
+  /* ---- 인구 / 인구 밀도 순위 ---- */
+  .rank-grid { display: flex; gap: 20px; }
+  .rank-grid .rank-box { flex: 1 1 0; min-width: 0; }
+  .rank-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
+  .rank-box h3 {
+    background: var(--surface-soft); padding: 15px 18px; font-size: 16px;
+    color: var(--primary-deep); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .rank-body { padding: 16px 18px 20px; }
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pill-btn {
+    padding: 7px 15px; border-radius: 18px; border: 1.5px solid var(--border);
+    background: var(--surface); color: var(--text-soft); font-size: 12.5px;
+    font-family: 'Jua', sans-serif; cursor: pointer; transition: all .14s ease;
+  }
+  .pill-btn:hover { border-color: var(--primary); }
+  .pill-btn.active { background: var(--active-bg); border-color: var(--primary); color: var(--primary-deep); }
+  .cont-links { display: none; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .cont-links.show { display: flex; }
+  .cont-link {
+    background: var(--surface); border: 1.5px solid var(--border); cursor: pointer;
+    color: var(--text-soft); font-size: 12.5px; font-family: 'Jua', sans-serif;
+    padding: 6px 12px; border-radius: 14px;
+  }
+  .cont-link.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+
+  table.rank-table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  .rank-table th { text-align: left; padding: 8px 6px; font-size: 12px; color: var(--text-soft); border-bottom: 2px solid var(--border); letter-spacing: .3px; white-space: nowrap; }
+  .rank-table td { padding: 11px 6px; border-bottom: 1px solid var(--border); }
+  .rank-table tbody tr:hover { background: var(--surface-soft); }
+  .rank-table td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .rank-table td.rank-cell { width: 34px; }
+  .medal {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 50%;
+    font-family: 'Jua', sans-serif; font-size: 12px; color: #fff;
+    background: var(--text-soft);
+  }
+  .medal.m1 { background: var(--gold); color: #4a3200; }
+  .medal.m2 { background: var(--silver); color: #2b3538; }
+  .medal.m3 { background: var(--bronze); color: #3a2005; }
+
+  @media (max-width: 900px) {
+    .app-body { padding: 20px 16px 40px; }
+    .site-head { padding: 14px 16px; }
+    .list-layout { flex-direction: column; }
+    .continent-side { flex-direction: row; flex-wrap: wrap; flex-basis: auto; }
+    .cnt-btn { flex: 1 1 auto; }
+    .country-list-card { flex-basis: auto; width: 100%; }
+    .rank-grid { flex-direction: column; }
+    .pdf-mat { padding: 12px; }
+    .pdf-arrow.left { left: -2px; }
+    .pdf-arrow.right { right: -2px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="globe">🌍</div>
+  <div>
+    <h1>사회과 부도 보기 · 통계 자료 검색하기</h1>
+    <p>세계 여러 나라의 통계를 살펴보고 순위를 찾아보아요</p>
+  </div>
+</header>
+
+<div class="main-nav">
+  <button class="nav-btn active" onclick="switchMainTab('pdf')">📖 사회과 부도 보기</button>
+  <button class="nav-btn" onclick="switchMainTab('stats')">📊 통계 자료 검색하기</button>
+</div>
+
+<div class="app-body">
+
+  <!-- 1. 사회과 부도 보기 (PDF 뷰어) -->
+  <section id="pdf-section" class="view-section active">
+    <div class="pdf-stage">
+      <button class="pdf-arrow left" id="prevPageBtn" onclick="goPage(-1)">◀</button>
+      <button class="pdf-arrow right" id="nextPageBtn" onclick="goPage(1)">▶</button>
+      <div class="pdf-mat">
+        <div class="pdf-scroll" id="pdfScroll">
+          <img id="pdfImg" src="pdfpage-1.png" alt="사회과 부도 통계 페이지" style="width: 100%;">
+        </div>
+      </div>
+    </div>
+    <div class="pdf-zoom-row">
+      <span class="page-label" id="pageLabel">1 / 2</span>
+      <button class="zoom-btn" onclick="zoomPdf(-15)" aria-label="축소">−</button>
+      <span class="zoom-label" id="zoomLabel">100%</span>
+      <button class="zoom-btn" onclick="zoomPdf(15)" aria-label="확대">+</button>
+    </div>
+    <p class="pdf-hint">쪽 페이지를 확대하면 화면을 상하좌우로 스크롤해서 볼 수 있어요.</p>
+  </section>
+
+  <!-- 2. 통계 자료 검색하기 -->
+  <section id="stats-section" class="view-section">
+
+    <!-- 서브 1: 목록 보기 -->
+    <div id="sub-list" class="sub-view">
+      <div class="stats-top-row">
+        <div class="search-box">
+          <span class="icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="국가명 또는 수도명으로 검색" oninput="onSearchInput()">
+        </div>
+        <div class="sub-nav">
+          <button class="sub-btn active" onclick="switchSubTab('list')">목록 보기</button>
+          <button class="sub-btn" onclick="switchSubTab('pop')">인구 순위</button>
+          <button class="sub-btn" onclick="switchSubTab('density')">인구 밀도 순위</button>
+        </div>
+      </div>
+
+      <div class="list-layout">
+        <div class="continent-side" id="list-continents">
+          <button class="cnt-btn active" data-cont="아시아" onclick="filterListContinent('아시아')">아시아</button>
+          <button class="cnt-btn" data-cont="유럽" onclick="filterListContinent('유럽')">유럽</button>
+          <button class="cnt-btn" data-cont="아프리카" onclick="filterListContinent('아프리카')">아프리카</button>
+          <button class="cnt-btn" data-cont="북아메리카" onclick="filterListContinent('북아메리카')">북아메리카</button>
+          <button class="cnt-btn" data-cont="남아메리카" onclick="filterListContinent('남아메리카')">남아메리카</button>
+          <button class="cnt-btn" data-cont="오세아니아" onclick="filterListContinent('오세아니아')">오세아니아</button>
+        </div>
+
+        <div class="country-list-card" id="countryListCard">
+          <!-- JS로 국가 목록 렌더링 -->
+        </div>
+
+        <div class="detail-panel">
+          <div class="detail-table-card">
+            <table class="detail-table">
+              <thead>
+                <tr><th>국가명</th><th>수도명</th><th>면적 (천㎢)</th><th>인구 (천명)</th><th>인구 밀도 (명/㎢)</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td id="d-country">-</td>
+                  <td id="d-capital">-</td>
+                  <td id="d-area">-</td>
+                  <td id="d-pop">-</td>
+                  <td id="d-density">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- TODO: 지도 연동 기능 — 연동 방식(구글 지도 새 창 / 사이트 내 지도 표시 등)이
+               정해지면 이 영역에 실제 지도를 표시하면 됩니다. 현재는 자리만 비워둡니다. -->
+          <div class="map-placeholder" id="mapPlaceholder"><span class="pin">📍</span>지도 연동하기</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 서브 2: 인구 순위 -->
+    <div id="sub-pop" class="sub-view" style="display: none;">
+      <div class="stats-top-row" style="justify-content:flex-end;">
+        <div class="sub-nav">
+          <button class="sub-btn" onclick="switchSubTab('list')">목록 보기</button>
+          <button class="sub-btn active" onclick="switchSubTab('pop')">인구 순위</button>
+          <button class="sub-btn" onclick="switchSubTab('density')">인구 밀도 순위</button>
+        </div>
+      </div>
+      <div class="rank-grid">
+        <div class="rank-box">
+          <h3>🔼 인구가 많은 나라</h3>
+          <div class="rank-body">
+            <div class="filter-row">
+              <button class="pill-btn active" id="pop-high-all" onclick="setPopFilter('high', 'type', 'all')">전체</button>
+              <button class="pill-btn" id="pop-high-cont" onclick="setPopFilter('high', 'type', 'cont')">대륙별 보기</button>
+              <button class="pill-btn active" id="pop-high-5" onclick="setPopFilter('high', 'limit', 5)">5개국</button>
+              <button class="pill-btn" id="pop-high-10" onclick="setPopFilter('high', 'limit', 10)">10개국</button>
+            </div>
+            <div class="cont-links" id="pop-high-cont-select"></div>
+            <table class="rank-table">
+              <thead><tr><th>순위</th><th>국가</th><th style="text-align:right;">인구</th></tr></thead>
+              <tbody id="pop-high-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="rank-box">
+          <h3>🔽 인구가 적은 나라</h3>
+          <div class="rank-body">
+            <div class="filter-row">
+              <button class="pill-btn active" id="pop-low-all" onclick="setPopFilter('low', 'type', 'all')">전체</button>
+              <button class="pill-btn" id="pop-low-cont" onclick="setPopFilter('low', 'type', 'cont')">대륙별 보기</button>
+              <button class="pill-btn active" id="pop-low-5" onclick="setPopFilter('low', 'limit', 5)">5개국</button>
+              <button class="pill-btn" id="pop-low-10" onclick="setPopFilter('low', 'limit', 10)">10개국</button>
+            </div>
+            <div class="cont-links" id="pop-low-cont-select"></div>
+            <table class="rank-table">
+              <thead><tr><th>순위</th><th>국가</th><th style="text-align:right;">인구</th></tr></thead>
+              <tbody id="pop-low-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 서브 3: 인구 밀도 순위 -->
+    <div id="sub-density" class="sub-view" style="display: none;">
+      <div class="stats-top-row" style="justify-content:flex-end;">
+        <div class="sub-nav">
+          <button class="sub-btn" onclick="switchSubTab('list')">목록 보기</button>
+          <button class="sub-btn" onclick="switchSubTab('pop')">인구 순위</button>
+          <button class="sub-btn active" onclick="switchSubTab('density')">인구 밀도 순위</button>
+        </div>
+      </div>
+      <div class="rank-grid">
+        <div class="rank-box">
+          <h3>🔼 인구 밀도가 높은 나라</h3>
+          <div class="rank-body">
+            <div class="filter-row">
+              <button class="pill-btn active" id="dens-high-all" onclick="setDensFilter('high', 'type', 'all')">전체</button>
+              <button class="pill-btn" id="dens-high-cont" onclick="setDensFilter('high', 'type', 'cont')">대륙별 보기</button>
+              <button class="pill-btn active" id="dens-high-5" onclick="setDensFilter('high', 'limit', 5)">5개국</button>
+              <button class="pill-btn" id="dens-high-10" onclick="setDensFilter('high', 'limit', 10)">10개국</button>
+            </div>
+            <div class="cont-links" id="dens-high-cont-select"></div>
+            <table class="rank-table">
+              <thead><tr><th>순위</th><th>국가</th><th style="text-align:right;">인구밀도</th></tr></thead>
+              <tbody id="dens-high-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="rank-box">
+          <h3>🔽 인구 밀도가 낮은 나라</h3>
+          <div class="rank-body">
+            <div class="filter-row">
+              <button class="pill-btn active" id="dens-low-all" onclick="setDensFilter('low', 'type', 'all')">전체</button>
+              <button class="pill-btn" id="dens-low-cont" onclick="setDensFilter('low', 'type', 'cont')">대륙별 보기</button>
+              <button class="pill-btn active" id="dens-low-5" onclick="setDensFilter('low', 'limit', 5)">5개국</button>
+              <button class="pill-btn" id="dens-low-10" onclick="setDensFilter('low', 'limit', 10)">10개국</button>
+            </div>
+            <div class="cont-links" id="dens-low-cont-select"></div>
+            <table class="rank-table">
+              <thead><tr><th>순위</th><th>국가</th><th style="text-align:right;">인구밀도</th></tr></thead>
+              <tbody id="dens-low-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<script>
+/* ============ 공통 데이터 ============ */
+const rawData = [{"continent": "아시아", "country": "대한민국(남한)", "capital": "서울", "area": 100, "pop": 51751, "density": 515.4}, {"continent": "아시아", "country": "네팔", "capital": "카트만두", "area": 147, "pop": 29651, "density": 201.5}, {"continent": "아시아", "country": "동티모르", "capital": "딜리", "area": 15, "pop": 1361, "density": 94.2}, {"continent": "아시아", "country": "라오스", "capital": "비엔티안", "area": 237, "pop": 7770, "density": 33.7}, {"continent": "아시아", "country": "레바논", "capital": "베이루트", "area": 10, "pop": 5806, "density": 567.5}, {"continent": "아시아", "country": "말레이시아", "capital": "쿠알라룸푸르", "area": 331, "pop": 35558, "density": 108.2}, {"continent": "아시아", "country": "몰디브", "capital": "말레", "area": 0.03, "pop": 528, "density": 1759.3}, {"continent": "아시아", "country": "몽골", "capital": "울란바토르", "area": 1564, "pop": 3476, "density": 2.2}, {"continent": "아시아", "country": "미얀마", "capital": "네피도", "area": 677, "pop": 54500, "density": 83.4}, {"continent": "아시아", "country": "바레인", "capital": "마나마", "area": 0.79, "pop": 1607, "density": 2052.4}, {"continent": "아시아", "country": "방글라데시", "capital": "다카", "area": 148, "pop": 173562, "density": 1333.4}, {"continent": "아시아", "country": "베트남", "capital": "하노이", "area": 331, "pop": 100988, "density": 322.2}, {"continent": "아시아", "country": "부탄", "capital": "팀푸", "area": 38, "pop": 792, "density": 20.6}, {"continent": "아시아", "country": "브루나이", "capital": "반다르스리브가완", "area": 6, "pop": 463, "density": 80.3}, {"continent": "아시아", "country": "사우디아라비아", "capital": "리야드", "area": 2207, "pop": 33963, "density": 15.8}, {"continent": "아시아", "country": "스리랑카", "capital": "콜롬보", "area": 66, "pop": 23104, "density": 368.4}, {"continent": "아시아", "country": "시리아", "capital": "다마스쿠스", "area": 185, "pop": 24673, "density": 134.3}, {"continent": "아시아", "country": "싱가포르", "capital": "싱가포르", "area": 0.73, "pop": 5832, "density": 8539.4}, {"continent": "아시아", "country": "아랍 에미리트", "capital": "아부다비", "area": 71, "pop": 11027, "density": 155.3}, {"continent": "아시아", "country": "아르메니아", "capital": "예레반", "area": 30, "pop": 2974, "density": 104.5}, {"continent": "아시아", "country": "아제르바이잔", "capital": "바쿠", "area": 87, "pop": 10337, "density": 125.1}, {"continent": "아시아", "country": "아프가니스탄", "capital": "카불", "area": 653, "pop": 42647, "density": 65.7}, {"continent": "아시아", "country": "예멘", "capital": "사나", "area": 528, "pop": 40583, "density": 76.9}, {"continent": "아시아", "country": "오만", "capital": "무스카트", "area": 310, "pop": 5282, "density": 17.1}, {"continent": "아시아", "country": "요르단", "capital": "암만", "area": 89, "pop": 11553, "density": 130.1}, {"continent": "아시아", "country": "우즈베키스탄", "capital": "타슈켄트", "area": 449, "pop": 36362, "density": 85.5}, {"continent": "아시아", "country": "이라크", "capital": "바그다드", "area": 435, "pop": 46042, "density": 106.1}, {"continent": "아시아", "country": "이란", "capital": "테헤란", "area": 1631, "pop": 91568, "density": 56.2}, {"continent": "아시아", "country": "이스라엘", "capital": "예루살렘", "area": 22, "pop": 9387, "density": 433.7}, {"continent": "아시아", "country": "인도", "capital": "뉴델리", "area": 3287, "pop": 1450936, "density": 488}, {"continent": "아시아", "country": "인도네시아", "capital": "자카르타", "area": 1911, "pop": 283488, "density": 148.4}, {"continent": "아시아", "country": "일본", "capital": "도쿄", "area": 378, "pop": 123753, "density": 328.4}, {"continent": "아시아", "country": "조지아", "capital": "트빌리시", "area": 70, "pop": 3808, "density": 54.8}, {"continent": "아시아", "country": "중국", "capital": "베이징", "area": 9600, "pop": 1419321, "density": 147.8}, {"continent": "아시아", "country": "카자흐스탄", "capital": "아스타나", "area": 2725, "pop": 20593, "density": 7.6}, {"continent": "아시아", "country": "카타르", "capital": "도하", "area": 12, "pop": 3048, "density": 263.1}, {"continent": "아시아", "country": "캄보디아", "capital": "프놈펜", "area": 181, "pop": 17639, "density": 97.4}, {"continent": "아시아", "country": "쿠웨이트", "capital": "쿠웨이트", "area": 18, "pop": 4935, "density": 276.9}, {"continent": "아시아", "country": "키르기스스탄", "capital": "비슈케크", "area": 200, "pop": 7186, "density": 37.5}, {"continent": "아시아", "country": "타이", "capital": "방콕", "area": 513, "pop": 71668, "density": 140.3}, {"continent": "아시아", "country": "타지키스탄", "capital": "두샨베", "area": 141, "pop": 10591, "density": 74}, {"continent": "아시아", "country": "투르크메니스탄", "capital": "아시가바트", "area": 488, "pop": 7494, "density": 15.9}, {"continent": "아시아", "country": "튀르키예", "capital": "앙카라", "area": 784, "pop": 87474, "density": 113.7}, {"continent": "아시아", "country": "파키스탄", "capital": "이슬라마바드", "area": 796, "pop": 251269, "density": 326}, {"continent": "아시아", "country": "필리핀", "capital": "마닐라", "area": 300, "pop": 115844, "density": 386.1}, {"continent": "유럽", "country": "그리스", "capital": "아테네", "area": 132, "pop": 10048, "density": 76.8}, {"continent": "유럽", "country": "네덜란드", "capital": "암스테르담", "area": 42, "pop": 18229, "density": 541.4}, {"continent": "유럽", "country": "노르웨이", "capital": "오슬로", "area": 324, "pop": 5577, "density": 18.3}, {"continent": "유럽", "country": "덴마크", "capital": "코펜하겐", "area": 43, "pop": 5977, "density": 141}, {"continent": "유럽", "country": "독일", "capital": "베를린", "area": 358, "pop": 84552, "density": 242.6}, {"continent": "유럽", "country": "라트비아", "capital": "리가", "area": 65, "pop": 1872, "density": 30.1}, {"continent": "유럽", "country": "러시아", "capital": "모스크바", "area": 17098, "pop": 144820, "density": 8.8}, {"continent": "유럽", "country": "루마니아", "capital": "부쿠레슈티", "area": 238, "pop": 19015, "density": 82.6}, {"continent": "유럽", "country": "룩셈부르크", "capital": "룩셈부르크", "area": 3, "pop": 673, "density": 259.9}, {"continent": "유럽", "country": "리투아니아", "capital": "빌뉴스", "area": 65, "pop": 2859, "density": 45.7}, {"continent": "유럽", "country": "리히텐슈타인", "capital": "파두츠", "area": 0.16, "pop": 40, "density": 249.2}, {"continent": "유럽", "country": "모나코", "capital": "모나코", "area": 0.07, "pop": 39, "density": 25926.8}, {"continent": "유럽", "country": "몬테네그로", "capital": "포드고리차", "area": 14, "pop": 638, "density": 46.2}, {"continent": "유럽", "country": "몰도바", "capital": "키시너우", "area": 34, "pop": 3035, "density": 92.3}, {"continent": "유럽", "country": "몰타", "capital": "발레타", "area": 0.32, "pop": 540, "density": 1713}, {"continent": "유럽", "country": "바티칸 시국", "capital": "바티칸", "area": 0.00044, "pop": 1, "density": 2272.7}, {"continent": "유럽", "country": "벨기에", "capital": "브뤼셀", "area": 31, "pop": 11739, "density": 387.7}, {"continent": "유럽", "country": "벨라루스", "capital": "민스크", "area": 208, "pop": 9057, "density": 44.6}, {"continent": "유럽", "country": "보스니아 헤르체고비나", "capital": "사라예보", "area": 51, "pop": 3164, "density": 61.8}, {"continent": "유럽", "country": "북마케도니아", "capital": "스코페", "area": 26, "pop": 1823, "density": 73.2}, {"continent": "유럽", "country": "불가리아", "capital": "소피아", "area": 110, "pop": 6758, "density": 62.3}, {"continent": "유럽", "country": "산마리노", "capital": "산마리노", "area": 0.06, "pop": 34, "density": 550.5}, {"continent": "유럽", "country": "세르비아", "capital": "베오그라드", "area": 88, "pop": 6736, "density": 87.8}, {"continent": "유럽", "country": "스웨덴", "capital": "스톡홀름", "area": 439, "pop": 10607, "density": 26}, {"continent": "유럽", "country": "스위스", "capital": "베른", "area": 41, "pop": 8922, "density": 223.1}, {"continent": "유럽", "country": "슬로바키아", "capital": "브라티슬라바", "area": 49, "pop": 5507, "density": 112.3}, {"continent": "유럽", "country": "슬로베니아", "capital": "류블랴나", "area": 20, "pop": 2119, "density": 105.2}, {"continent": "유럽", "country": "아이슬란드", "capital": "레이캬비크", "area": 103, "pop": 393, "density": 3.9}, {"continent": "유럽", "country": "아일랜드", "capital": "더블린", "area": 70, "pop": 5255, "density": 76.9}, {"continent": "유럽", "country": "안도라", "capital": "안도라라베야", "area": 0.47, "pop": 82, "density": 174.3}, {"continent": "유럽", "country": "알바니아", "capital": "티라나", "area": 29, "pop": 2792, "density": 101.9}, {"continent": "유럽", "country": "에스토니아", "capital": "탈린", "area": 45, "pop": 1361, "density": 31.3}, {"continent": "유럽", "country": "에스파냐", "capital": "마드리드", "area": 506, "pop": 47911, "density": 95.4}, {"continent": "유럽", "country": "영국", "capital": "런던", "area": 242, "pop": 69138, "density": 284.8}, {"continent": "유럽", "country": "오스트리아", "capital": "빈", "area": 84, "pop": 9121, "density": 110.5}, {"continent": "유럽", "country": "우크라이나", "capital": "키이우", "area": 604, "pop": 37860, "density": 65.4}, {"continent": "유럽", "country": "이탈리아", "capital": "로마", "area": 302, "pop": 59343, "density": 200.5}, {"continent": "유럽", "country": "체코", "capital": "프라하", "area": 79, "pop": 10736, "density": 139.1}, {"continent": "유럽", "country": "코소보", "capital": "프리슈티나", "area": 109, "pop": 1685, "density": 154.5}, {"continent": "유럽", "country": "크로아티아", "capital": "자그레브", "area": 57, "pop": 3875, "density": 69.3}, {"continent": "유럽", "country": "키프로스", "capital": "니코시아", "area": 9, "pop": 1358, "density": 147}, {"continent": "유럽", "country": "포르투갈", "capital": "리스본", "area": 92, "pop": 10425, "density": 113.3}, {"continent": "유럽", "country": "폴란드", "capital": "바르샤바", "area": 313, "pop": 38539, "density": 125.9}, {"continent": "유럽", "country": "프랑스", "capital": "파리", "area": 552, "pop": 66549, "density": 120.7}, {"continent": "유럽", "country": "핀란드", "capital": "헬싱키", "area": 337, "pop": 5617, "density": 18.6}, {"continent": "유럽", "country": "헝가리", "capital": "부다페스트", "area": 93, "pop": 9676, "density": 106.9}, {"continent": "아프리카", "country": "가나", "capital": "아크라", "area": 239, "pop": 34427, "density": 151.3}, {"continent": "아프리카", "country": "가봉", "capital": "리브르빌", "area": 268, "pop": 2539, "density": 9.9}, {"continent": "아프리카", "country": "감비아", "capital": "반줄", "area": 11, "pop": 2760, "density": 272.7}, {"continent": "아프리카", "country": "기니", "capital": "코나크리", "area": 246, "pop": 14755, "density": 60}, {"continent": "아프리카", "country": "기니비사우", "capital": "비사우", "area": 36, "pop": 2201, "density": 78.3}, {"continent": "아프리카", "country": "나미비아", "capital": "빈트후크", "area": 825, "pop": 3030, "density": 3.7}, {"continent": "아프리카", "country": "나이지리아", "capital": "아부자", "area": 924, "pop": 232679, "density": 255.5}, {"continent": "아프리카", "country": "남수단", "capital": "주바", "area": 647, "pop": 11943, "density": 21.2}, {"continent": "아프리카", "country": "남아프리카 공화국", "capital": "프리토리아", "area": 1221, "pop": 64007, "density": 52.4}, {"continent": "아프리카", "country": "니제르", "capital": "니아메", "area": 1267, "pop": 27032, "density": 21.3}, {"continent": "아프리카", "country": "라이베리아", "capital": "몬로비아", "area": 111, "pop": 5613, "density": 58.3}, {"continent": "아프리카", "country": "레소토", "capital": "마세루", "area": 30, "pop": 2337, "density": 77}, {"continent": "아프리카", "country": "르완다", "capital": "키갈리", "area": 26, "pop": 14257, "density": 588.9}, {"continent": "아프리카", "country": "리비아", "capital": "트리폴리", "area": 1676, "pop": 7381, "density": 4.4}, {"continent": "아프리카", "country": "마다가스카르", "capital": "안타나나리보", "area": 587, "pop": 31965, "density": 54.9}, {"continent": "아프리카", "country": "말라위", "capital": "릴롱궤", "area": 118, "pop": 21655, "density": 229}, {"continent": "아프리카", "country": "말리", "capital": "바마코", "area": 1240, "pop": 24479, "density": 20.1}, {"continent": "아프리카", "country": "모로코", "capital": "라바트", "area": 447, "pop": 38081, "density": 85.3}, {"continent": "아프리카", "country": "모리셔스", "capital": "포트루이스", "area": 2, "pop": 1271, "density": 626.2}, {"continent": "아프리카", "country": "모리타니", "capital": "누악쇼트", "area": 1031, "pop": 5169, "density": 5}, {"continent": "아프리카", "country": "모잠비크", "capital": "마푸투", "area": 799, "pop": 34632, "density": 44}, {"continent": "아프리카", "country": "베냉", "capital": "포르토노보", "area": 115, "pop": 14463, "density": 128.3}, {"continent": "아프리카", "country": "보츠와나", "capital": "가보로네", "area": 582, "pop": 2521, "density": 4.4}, {"continent": "아프리카", "country": "부룬디", "capital": "기테가", "area": 28, "pop": 14048, "density": 541.3}, {"continent": "아프리카", "country": "부르키나파소", "capital": "와가두구", "area": 274, "pop": 23549, "density": 86.1}, {"continent": "아프리카", "country": "상투메 프린시페", "capital": "상투메", "area": 0.96, "pop": 236, "density": 245.4}, {"continent": "아프리카", "country": "세네갈", "capital": "다카르", "area": 197, "pop": 18502, "density": 96.1}, {"continent": "아프리카", "country": "세이셸", "capital": "빅토리아", "area": 0.46, "pop": 130, "density": 285.4}, {"continent": "아프리카", "country": "소말리아", "capital": "모가디슈", "area": 638, "pop": 19009, "density": 30.3}, {"continent": "아프리카", "country": "수단", "capital": "하르툼", "area": 1888, "pop": 50449, "density": 28.6}, {"continent": "아프리카", "country": "시에라리온", "capital": "프리타운", "area": 72, "pop": 8642, "density": 120.5}, {"continent": "아프리카", "country": "알제리", "capital": "알제", "area": 2382, "pop": 46814, "density": 19.7}, {"continent": "아프리카", "country": "앙골라", "capital": "루안다", "area": 1247, "pop": 37886, "density": 30.4}, {"continent": "아프리카", "country": "에리트레아", "capital": "아스마라", "area": 121, "pop": 3536, "density": 29.2}, {"continent": "아프리카", "country": "에스와티니", "capital": "음바바네", "area": 17, "pop": 1243, "density": 71.6}, {"continent": "아프리카", "country": "에티오피아", "capital": "아디스아바바", "area": 1104, "pop": 132060, "density": 132.1}, {"continent": "아프리카", "country": "우간다", "capital": "캄팔라", "area": 242, "pop": 50015, "density": 250.3}, {"continent": "아프리카", "country": "이집트", "capital": "카이로", "area": 1002, "pop": 116538, "density": 117.1}, {"continent": "아프리카", "country": "잠비아", "capital": "루사카", "area": 753, "pop": 21315, "density": 28.7}, {"continent": "아프리카", "country": "적도 기니", "capital": "말라보", "area": 28, "pop": 1893, "density": 67.5}, {"continent": "아프리카", "country": "중앙아프리카 공화국", "capital": "방기", "area": 623, "pop": 5331, "density": 8.6}, {"continent": "아프리카", "country": "지부티", "capital": "지부티", "area": 23, "pop": 1169, "density": 50.4}, {"continent": "아프리카", "country": "짐바브웨", "capital": "하라레", "area": 391, "pop": 16634, "density": 43}, {"continent": "아프리카", "country": "차드", "capital": "은자메나", "area": 1284, "pop": 20299, "density": 16.1}, {"continent": "아프리카", "country": "카메룬", "capital": "야운데", "area": 476, "pop": 29124, "density": 62.5}, {"continent": "아프리카", "country": "카보베르데", "capital": "프라이아", "area": 4, "pop": 525, "density": 130.2}, {"continent": "아프리카", "country": "케냐", "capital": "나이로비", "area": 592, "pop": 56433, "density": 97.2}, {"continent": "아프리카", "country": "코모로", "capital": "모로니", "area": 2, "pop": 867, "density": 465.7}, {"continent": "아프리카", "country": "코트디부아르", "capital": "야무수크로", "area": 322, "pop": 31934, "density": 100.4}, {"continent": "아프리카", "country": "콩고", "capital": "브라자빌", "area": 342, "pop": 6333, "density": 18.5}, {"continent": "아프리카", "country": "콩고 민주 공화국", "capital": "킨샤사", "area": 2345, "pop": 109276, "density": 48.2}, {"continent": "아프리카", "country": "탄자니아", "capital": "도도마", "area": 947, "pop": 68560, "density": 77.4}, {"continent": "아프리카", "country": "토고", "capital": "로메", "area": 57, "pop": 9515, "density": 174.9}, {"continent": "아프리카", "country": "튀니지", "capital": "튀니스", "area": 164, "pop": 12277, "density": 79}, {"continent": "북아메리카", "country": "과테말라", "capital": "과테말라", "area": 109, "pop": 18406, "density": 171.8}, {"continent": "북아메리카", "country": "그레나다", "capital": "세인트조지스", "area": 0.34, "pop": 117, "density": 344.7}, {"continent": "북아메리카", "country": "니카라과", "capital": "마나과", "area": 130, "pop": 6916, "density": 57.5}, {"continent": "북아메리카", "country": "도미니카", "capital": "로조", "area": 0.75, "pop": 66, "density": 88.3}, {"continent": "북아메리카", "country": "도미니카 공화국", "capital": "산토도밍고", "area": 49, "pop": 11428, "density": 236.5}, {"continent": "북아메리카", "country": "멕시코", "capital": "멕시코시티", "area": 1964, "pop": 130861, "density": 66.8}, {"continent": "북아메리카", "country": "미국", "capital": "워싱턴", "area": 9834, "pop": 345427, "density": 37.8}, {"continent": "북아메리카", "country": "바베이도스", "capital": "브리지타운", "area": 0.43, "pop": 282, "density": 656.9}, {"continent": "북아메리카", "country": "바하마", "capital": "나소", "area": 14, "pop": 401, "density": 74.9}, {"continent": "북아메리카", "country": "벨리즈", "capital": "벨모판", "area": 23, "pop": 417, "density": 18.3}, {"continent": "북아메리카", "country": "세인트루시아", "capital": "캐스트리스", "area": 0.62, "pop": 180, "density": 291.8}, {"continent": "북아메리카", "country": "세인트빈센트 그레나딘", "capital": "킹스타운", "area": 0.39, "pop": 101, "density": 258}, {"continent": "북아메리카", "country": "세인트키츠 네비스", "capital": "바스테르", "area": 0.26, "pop": 47, "density": 180.2}, {"continent": "북아메리카", "country": "아이티", "capital": "포르토프랭스", "area": 28, "pop": 11773, "density": 427}, {"continent": "북아메리카", "country": "앤티가 바부다", "capital": "세인트존스", "area": 0.44, "pop": 94, "density": 213.1}, {"continent": "북아메리카", "country": "엘살바도르", "capital": "산살바도르", "area": 21, "pop": 6338, "density": 305.9}, {"continent": "북아메리카", "country": "온두라스", "capital": "테구시갈파", "area": 112, "pop": 10826, "density": 99.3}, {"continent": "북아메리카", "country": "자메이카", "capital": "킹스턴", "area": 11, "pop": 2839, "density": 262.2}, {"continent": "북아메리카", "country": "캐나다", "capital": "오타와", "area": 9985, "pop": 39742, "density": 4.4}, {"continent": "북아메리카", "country": "코스타리카", "capital": "산호세", "area": 51, "pop": 5130, "density": 100.5}, {"continent": "북아메리카", "country": "쿠바", "capital": "아바나", "area": 110, "pop": 10980, "density": 102.8}, {"continent": "북아메리카", "country": "트리니다드 토바고", "capital": "포트오브스페인", "area": 5, "pop": 1508, "density": 293.9}, {"continent": "북아메리카", "country": "파나마", "capital": "파나마", "area": 75, "pop": 4516, "density": 60.9}, {"continent": "남아메리카", "country": "가이아나", "capital": "조지타운", "area": 215, "pop": 831, "density": 4.2}, {"continent": "남아메리카", "country": "베네수엘라 볼리바르", "capital": "카라카스", "area": 930, "pop": 28406, "density": 31}, {"continent": "남아메리카", "country": "볼리비아", "capital": "라파스", "area": 1099, "pop": 12413, "density": 11.5}, {"continent": "남아메리카", "country": "브라질", "capital": "브라질리아", "area": 8516, "pop": 211999, "density": 25.4}, {"continent": "남아메리카", "country": "수리남", "capital": "파라마리보", "area": 164, "pop": 634, "density": 4.1}, {"continent": "남아메리카", "country": "아르헨티나", "capital": "부에노스아이레스", "area": 2796, "pop": 45696, "density": 16.4}, {"continent": "남아메리카", "country": "에콰도르", "capital": "키토", "area": 257, "pop": 18135, "density": 73}, {"continent": "남아메리카", "country": "우루과이", "capital": "몬테비데오", "area": 174, "pop": 3387, "density": 19.6}, {"continent": "남아메리카", "country": "칠레", "capital": "산티아고", "area": 756, "pop": 19765, "density": 26.2}, {"continent": "남아메리카", "country": "콜롬비아", "capital": "보고타", "area": 1142, "pop": 52886, "density": 47.1}, {"continent": "남아메리카", "country": "파라과이", "capital": "아순시온", "area": 407, "pop": 6929, "density": 17.1}, {"continent": "남아메리카", "country": "페루", "capital": "리마", "area": 1285, "pop": 34218, "density": 26.7}, {"continent": "오세아니아", "country": "나우루", "capital": "야렌", "area": 0.02, "pop": 12, "density": 597.3}, {"continent": "오세아니아", "country": "뉴질랜드", "capital": "웰링턴", "area": 268, "pop": 5214, "density": 19.7}, {"continent": "오세아니아", "country": "마셜 제도", "capital": "마주로", "area": 0.18, "pop": 38, "density": 208.6}, {"continent": "오세아니아", "country": "미크로네시아", "capital": "팔리키르", "area": 0.7, "pop": 113, "density": 161.7}, {"continent": "오세아니아", "country": "바누아투", "capital": "포트빌라", "area": 12, "pop": 328, "density": 26.9}, {"continent": "오세아니아", "country": "사모아", "capital": "아피아", "area": 3, "pop": 218, "density": 77}, {"continent": "오세아니아", "country": "솔로몬 제도", "capital": "호니아라", "area": 29, "pop": 819, "density": 28.4}, {"continent": "오세아니아", "country": "오스트레일리아", "capital": "캔버라", "area": 7692, "pop": 26713, "density": 3.5}, {"continent": "오세아니아", "country": "키리바시", "capital": "타라와", "area": 0.81, "pop": 135, "density": 185.3}, {"continent": "오세아니아", "country": "통가", "capital": "누쿠알로파", "area": 0.75, "pop": 104, "density": 160.3}, {"continent": "오세아니아", "country": "투발루", "capital": "푸나푸티", "area": 3, "pop": 10, "density": 321.5}, {"continent": "오세아니아", "country": "파푸아 뉴기니", "capital": "포트모르즈비", "area": 463, "pop": 10577, "density": 23.4}, {"continent": "오세아니아", "country": "팔라우", "capital": "응어룰무드", "area": 0.46, "pop": 18, "density": 38.5}, {"continent": "오세아니아", "country": "피지", "capital": "수바", "area": 18, "pop": 929, "density": 50.8}];
+const continents = ["아시아", "유럽", "아프리카", "북아메리카", "남아메리카", "오세아니아"];
+
+function fmt(n) { return Number(n).toLocaleString(undefined, {maximumFractionDigits: 4}); }
+function medalHtml(rank) {
+  if (rank <= 3) return `<span class="medal m${rank}">${rank}</span>`;
+  return rank;
+}
+
+/* ============ 메인 탭 / 서브 탭 전환 ============ */
+function switchMainTab(tab) {
+  Array.from(document.querySelectorAll('.nav-btn')).forEach(b => b.classList.remove('active'));
+  Array.from(document.querySelectorAll('.view-section')).forEach(s => s.classList.remove('active'));
+  if (tab === 'pdf') {
+    document.querySelectorAll('.nav-btn')[0].classList.add('active');
+    document.getElementById('pdf-section').classList.add('active');
+  } else {
+    document.querySelectorAll('.nav-btn')[1].classList.add('active');
+    document.getElementById('stats-section').classList.add('active');
+  }
+}
+
+function switchSubTab(tab) {
+  Array.from(document.querySelectorAll('.sub-btn')).forEach(b => b.classList.remove('active'));
+  document.getElementById('sub-list').style.display = 'none';
+  document.getElementById('sub-pop').style.display = 'none';
+  document.getElementById('sub-density').style.display = 'none';
+
+  if (tab === 'list') {
+    Array.from(document.querySelectorAll('.sub-btn')).forEach(b => { if (b.textContent === '목록 보기') b.classList.add('active'); });
+    document.getElementById('sub-list').style.display = 'block';
+  } else if (tab === 'pop') {
+    Array.from(document.querySelectorAll('.sub-btn')).forEach(b => { if (b.textContent === '인구 순위') b.classList.add('active'); });
+    document.getElementById('sub-pop').style.display = 'block';
+    renderPopTable('high'); renderPopTable('low');
+  } else {
+    Array.from(document.querySelectorAll('.sub-btn')).forEach(b => { if (b.textContent === '인구 밀도 순위') b.classList.add('active'); });
+    document.getElementById('sub-density').style.display = 'block';
+    renderDensTable('high'); renderDensTable('low');
+  }
+}
+
+/* ============ 목록 보기 : 대륙 사이드바 + 국가 목록 + 상세 카드 ============ */
+let currentListContinent = '아시아';
+let currentSearchTerm = '';
+let selectedCountryName = null;
+
+function filterListContinent(cont) {
+  currentListContinent = cont;
+  Array.from(document.querySelectorAll('#list-continents .cnt-btn')).forEach(b => {
+    b.classList.toggle('active', b.dataset.cont === cont);
+  });
+  renderCountryList();
+}
+
+function onSearchInput() {
+  currentSearchTerm = document.getElementById('searchInput').value.trim();
+  const searching = currentSearchTerm.length > 0;
+  Array.from(document.querySelectorAll('#list-continents .cnt-btn')).forEach(b => b.disabled = searching);
+  renderCountryList();
+}
+
+function getListSource() {
+  if (currentSearchTerm) {
+    const term = currentSearchTerm.toLowerCase();
+    return rawData.filter(d => d.country.toLowerCase().includes(term) || d.capital.toLowerCase().includes(term));
+  }
+  return rawData.filter(d => d.continent === currentListContinent);
+}
+
+function renderCountryList() {
+  const card = document.getElementById('countryListCard');
+  const list = getListSource();
+
+  if (list.length === 0) {
+    card.innerHTML = '<div class="list-empty-msg">검색 결과가 없습니다.</div>';
+    clearDetail();
+    return;
+  }
+
+  card.innerHTML = list.map(d => `
+    <div class="country-item" data-name="${d.country}" onclick="selectCountryByName('${d.country.replace(/'/g, "\\'")}')">${d.country}</div>
+  `).join('');
+
+  // 이전에 선택된 국가가 현재 목록에 있으면 유지, 없으면 첫 번째 국가를 선택
+  const stillHere = list.find(d => d.country === selectedCountryName);
+  selectCountry(stillHere || list[0]);
+}
+
+function selectCountryByName(name) {
+  const item = rawData.find(d => d.country === name);
+  if (item) selectCountry(item);
+}
+
+function selectCountry(item) {
+  selectedCountryName = item.country;
+  Array.from(document.querySelectorAll('.country-item')).forEach(el => {
+    el.classList.toggle('active', el.dataset.name === item.country);
+  });
+  document.getElementById('d-country').innerText = item.country;
+  document.getElementById('d-capital').innerText = item.capital;
+  document.getElementById('d-area').innerText = fmt(item.area);
+  document.getElementById('d-pop').innerText = fmt(item.pop);
+  document.getElementById('d-density').innerText = fmt(item.density);
+}
+
+function clearDetail() {
+  selectedCountryName = null;
+  ['d-country','d-capital','d-area','d-pop','d-density'].forEach(id => document.getElementById(id).innerText = '-');
+}
+
+/* ============ 인구 순위 / 인구 밀도 순위 ============ */
+const popState = {
+  high: { type: 'all', cont: '아시아', limit: 5 },
+  low: { type: 'all', cont: '아시아', limit: 5 }
+};
+const densState = {
+  high: { type: 'all', cont: '아시아', limit: 5 },
+  low: { type: 'all', cont: '아시아', limit: 5 }
+};
+
+function initContinentLinks(containerId, state, callback) {
+  const box = document.getElementById(containerId);
+  box.innerHTML = '';
+  continents.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'cont-link' + (c === state.cont ? ' active' : '');
+    btn.innerText = c;
+    btn.onclick = () => {
+      Array.from(box.querySelectorAll('.cont-link')).forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.cont = c;
+      callback();
+    };
+    box.appendChild(btn);
+  });
+}
+
+function setPopFilter(side, key, val) {
+  popState[side][key] = val;
+  document.getElementById(`pop-${side}-all`).classList.toggle('active', popState[side].type === 'all');
+  document.getElementById(`pop-${side}-cont`).classList.toggle('active', popState[side].type === 'cont');
+  document.getElementById(`pop-${side}-5`).classList.toggle('active', popState[side].limit === 5);
+  document.getElementById(`pop-${side}-10`).classList.toggle('active', popState[side].limit === 10);
+  document.getElementById(`pop-${side}-cont-select`).classList.toggle('show', popState[side].type === 'cont');
+  renderPopTable(side);
+}
+
+function renderPopTable(side) {
+  const st = popState[side];
+  let arr = rawData.filter(d => st.type === 'all' || d.continent === st.cont);
+  arr.sort((a, b) => side === 'high' ? b.pop - a.pop : a.pop - b.pop);
+  const sliced = arr.slice(0, st.limit);
+  document.getElementById(`pop-${side}-tbody`).innerHTML = sliced.map((d, i) => `
+    <tr><td class="rank-cell">${medalHtml(i+1)}</td><td>${d.country}</td><td class="num">${fmt(d.pop)}</td></tr>
+  `).join('');
+}
+
+function setDensFilter(side, key, val) {
+  densState[side][key] = val;
+  document.getElementById(`dens-${side}-all`).classList.toggle('active', densState[side].type === 'all');
+  document.getElementById(`dens-${side}-cont`).classList.toggle('active', densState[side].type === 'cont');
+  document.getElementById(`dens-${side}-5`).classList.toggle('active', densState[side].limit === 5);
+  document.getElementById(`dens-${side}-10`).classList.toggle('active', densState[side].limit === 10);
+  document.getElementById(`dens-${side}-cont-select`).classList.toggle('show', densState[side].type === 'cont');
+  renderDensTable(side);
+}
+
+function renderDensTable(side) {
+  const st = densState[side];
+  let arr = rawData.filter(d => st.type === 'all' || d.continent === st.cont);
+  arr.sort((a, b) => side === 'high' ? b.density - a.density : a.density - b.density);
+  const sliced = arr.slice(0, st.limit);
+  document.getElementById(`dens-${side}-tbody`).innerHTML = sliced.map((d, i) => `
+    <tr><td class="rank-cell">${medalHtml(i+1)}</td><td>${d.country}</td><td class="num">${fmt(d.density)}</td></tr>
+  `).join('');
+}
+
+initContinentLinks('pop-high-cont-select', popState.high, () => renderPopTable('high'));
+initContinentLinks('pop-low-cont-select', popState.low, () => renderPopTable('low'));
+initContinentLinks('dens-high-cont-select', densState.high, () => renderDensTable('high'));
+initContinentLinks('dens-low-cont-select', densState.low, () => renderDensTable('low'));
+
+renderCountryList();
+
+/* ============ 사회과 부도 보기 : PDF 뷰어 (미리 렌더링한 이미지 사용) ============ */
+/* PDF.js로 book.pdf를 직접 읽으면 파일을 더블클릭해서 열었을 때(file://)
+   브라우저 보안 정책(CORS) 때문에 로드에 실패하는 경우가 많습니다.
+   그래서 book.pdf의 각 쪽을 미리 이미지(pdfpage-1.png, pdfpage-2.png)로 만들어
+   <img> 태그로 보여주는 방식으로 구현했습니다. 이미지 2장이 index.html과
+   같은 폴더에 있어야 합니다. */
+const totalPages = 2;
+let currentPage = 1;
+let zoomPercent = 100;
+const MIN_ZOOM = 40, MAX_ZOOM = 260;
+
+const pdfImgEl = document.getElementById('pdfImg');
+const pageLabelEl = document.getElementById('pageLabel');
+const zoomLabelEl = document.getElementById('zoomLabel');
+const prevPageBtnEl = document.getElementById('prevPageBtn');
+const nextPageBtnEl = document.getElementById('nextPageBtn');
+
+function renderPdfState() {
+  pdfImgEl.src = `pdfpage-${currentPage}.png`;
+  pdfImgEl.style.width = zoomPercent + '%';
+  pageLabelEl.textContent = `${currentPage} / ${totalPages}`;
+  zoomLabelEl.textContent = `${zoomPercent}%`;
+  prevPageBtnEl.disabled = currentPage <= 1;
+  nextPageBtnEl.disabled = currentPage >= totalPages;
+}
+
+function goPage(delta) {
+  const next = currentPage + delta;
+  if (next < 1 || next > totalPages) return;
+  currentPage = next;
+  document.getElementById('pdfScroll').scrollTop = 0;
+  renderPdfState();
+}
+
+function zoomPdf(delta) {
+  zoomPercent = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomPercent + delta));
+  renderPdfState();
+}
+
+renderPdfState();
+</script>
+</body>
+</html>
