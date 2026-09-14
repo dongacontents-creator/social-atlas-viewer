@@ -1018,6 +1018,8 @@ var WORLD_LAT_MAX = 85;  // 이 위도부터(북극 근처) 지도를 시작
 var WORLD_VIEW_W = 360 * WORLD_SCALE;
 var WORLD_VIEW_H = 145 * WORLD_SCALE; // 위도 85 ~ -60 범위만 사용 (남극 대륙 대부분 제외)
 var WORLD_MIN_ZOOM = 100, WORLD_MAX_ZOOM = 800, WORLD_ZOOM_STEP = 60;
+var FALLBACK_DOT_BASE_R = 3; // 100% 화면 기준 점 반지름(뷰박스 단위) — 확대해도 화면상 크기가
+                               // 커지지 않도록, 확대 배율에 반비례해 줄여서 항상 같은 크기로 보이게 합니다.
 var worldPathsByIso = {};
 var worldDotsByIso = {};
 var worldFocusByIso = {};
@@ -1069,6 +1071,13 @@ function updateWorldViewBox() {
   worldSvgEl.setAttribute('viewBox', vx.toFixed(2) + ' ' + vy.toFixed(2) + ' ' + vw.toFixed(2) + ' ' + vh.toFixed(2));
   var label = byId('worldZoomLabel');
   if (label) label.textContent = worldZoomPercent + '%';
+
+  // 바티칸·모나코처럼 폴리곤이 없어 점으로 표시하는 초소국 마커: 뷰박스 단위 반지름을
+  // 확대 배율에 반비례하게 줄여, 많이 확대해도 옆 나라를 뒤덮는 거대한 점이 되지 않고
+  // 항상 화면에서 같은 크기(100% 화면일 때와 동일)로 보이게 합니다.
+  Object.keys(worldDotsByIso).forEach(function (iso) {
+    worldDotsByIso[iso].setAttribute('r', (FALLBACK_DOT_BASE_R * factor).toFixed(3));
+  });
 }
 
 function zoomWorld(delta) {
@@ -1100,7 +1109,7 @@ function buildWorldLocator() {
     var circle = document.createElementNS(SVG_NS, 'circle');
     circle.setAttribute('cx', String(xy.x));
     circle.setAttribute('cy', String(xy.y));
-    circle.setAttribute('r', '3');
+    circle.setAttribute('r', String(FALLBACK_DOT_BASE_R));
     circle.setAttribute('class', 'world-locator-dot');
     svg.appendChild(circle);
     worldDotsByIso[iso] = circle;
