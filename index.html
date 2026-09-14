@@ -284,34 +284,26 @@
   border-radius: 14px; flex: 1; min-height: 320px;
   display: flex; flex-direction: column; overflow: hidden;
 }
-.country-map {
-  /* SVG는 viewBox로부터 내재적 가로세로비를 갖는 대체 요소라, 부모에 min-height만 있으면
-     (정해진 높이가 없으면) 너비를 기준으로 정사각형으로 늘어나 버립니다. height를 명시해
-     그런 현상을 막습니다. */
-  height: 280px; width: 100%; background: var(--surface-soft);
-  display: flex; align-items: center; justify-content: center;
-}
-.country-shape-svg { width: 100%; height: 100%; display: block; }
-.country-shape-path { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; stroke-linejoin: round; }
-.country-shape-dot { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
-.country-shape-empty { font-size: 13px; font-weight: 700; color: var(--text-soft); text-align: center; padding: 20px; }
-.map-caption {
-  padding: 10px 16px; font-size: 13px; font-weight: 700;
-  color: var(--primary); background: var(--surface); border-top: 1px solid var(--border);
-  display: flex; align-items: center; gap: 6px;
-}
-.world-locator-label {
-  padding: 10px 16px 0; font-size: 12.5px; font-weight: 700; color: var(--text-soft);
-}
 .world-locator {
-  height: 190px; width: 100%; padding: 8px 16px 16px;
-  background: var(--surface);
+  /* SVG는 viewBox로부터 내재적 가로세로비를 갖는 대체 요소라, 부모에 min-height만 있으면
+     (정해진 높이가 없으면) 너비를 기준으로 늘어나 버립니다. height를 명시해 막습니다. */
+  height: 320px; width: 100%; background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
 }
 .world-locator-svg { width: 100%; height: 100%; display: block; }
 .world-country-path { fill: var(--border); stroke: var(--surface); stroke-width: 0.4; }
 .world-country-path.active { fill: var(--accent); stroke: var(--accent); }
 .world-locator-dot { fill: var(--border); stroke: var(--surface); stroke-width: 0.6; opacity: 0; }
 .world-locator-dot.active { fill: var(--accent); stroke: var(--accent); opacity: 1; }
+.map-caption {
+  padding: 10px 16px; font-size: 13px; font-weight: 700;
+  color: var(--primary); background: var(--surface); border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 6px;
+}
+.world-zoom-row {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border);
+}
 
 /* ---- 인구 / 인구 밀도 순위 ---- */
 .rank-grid { display: flex; gap: 20px; }
@@ -454,13 +446,16 @@
               </tbody>
             </table>
           </div>
-          <!-- 자체 제작 SVG 지도: 선택한 국가의 윤곽을 확대해서 보여주고(외부 지도 라이브러리 없음),
-               같은 좌표계로 그린 세계 전체 지도에서 그 나라의 위치와 다른 나라 대비 크기도 함께 보여줍니다. -->
+          <!-- 자체 제작 SVG 세계지도: 선택한 국가를 강조해서 위치와 다른 나라 대비 크기를
+               보여줍니다(외부 지도 라이브러리·API 없음). 확대/축소 버튼으로 자세히 볼 수 있어요. -->
           <div class="map-card" id="mapCard">
-            <div class="country-map" id="countryMap"></div>
-            <p class="map-caption" id="mapCaption">🌍 국가를 선택하면 지도에 표시돼요</p>
-            <p class="world-locator-label">🗺️ 세계 속 위치와 크기</p>
             <div class="world-locator" id="worldLocator"></div>
+            <p class="map-caption" id="mapCaption">🌍 국가를 선택하면 지도에 표시돼요</p>
+            <div class="world-zoom-row">
+              <button class="zoom-btn" id="worldZoomOutBtn" aria-label="지도 축소">−</button>
+              <span class="zoom-label" id="worldZoomLabel">100%</span>
+              <button class="zoom-btn" id="worldZoomInBtn" aria-label="지도 확대">+</button>
+            </div>
           </div>
         </div>
       </div>
@@ -975,7 +970,6 @@ var countriesGeoData = {"type":"FeatureCollection", "features": [
 ]};
 
 var SVG_NS = 'http://www.w3.org/2000/svg';
-var GEO_VIEWBOX = 200; // 정사각형 좌표계 — 컨테이너의 실제 픽셀 크기를 몰라도 그릴 수 있어 별도 리사이즈 처리가 필요 없음
 
 function ringArea(ring) {
   // 위경도 좌표 기준 신발끈 공식(shoelace) — 나라 간 "본토" 크기 비교용 근사치
@@ -988,10 +982,10 @@ function ringArea(ring) {
   return Math.abs(area) / 2;
 }
 
-function mainLandmassBounds(feature) {
+function mainLandmassCenter(feature) {
   // 프랑스(프랑스령 폴리네시아 포함), 미국(아메리칸사모아 포함)처럼 해외 영토가
-  // 같은 MultiPolygon에 함께 들어있는 경우, 가장 넓은 땅덩이(본토) 기준으로
-  // 지도를 맞추기 위한 바운딩 박스를 계산합니다.
+  // 같은 MultiPolygon에 함께 들어있는 경우, 확대했을 때 엉뚱한 바다 한가운데가
+  // 아니라 본토가 화면 중심에 오도록 가장 넓은 땅덩이의 중심 좌표를 계산합니다.
   var geom = feature.geometry;
   var polygons;
   if (geom.type === 'Polygon') polygons = [geom.coordinates];
@@ -1013,102 +1007,29 @@ function mainLandmassBounds(feature) {
     if (lat < minLat) minLat = lat;
     if (lat > maxLat) maxLat = lat;
   });
-  return [[minLat, minLng], [maxLat, maxLng]];
-}
-
-function projectRingToPoints(ring, centerLat, centerLng, cosLat, scale) {
-  return ring.map(function (pt) {
-    var x = (pt[0] - centerLng) * cosLat * scale + GEO_VIEWBOX / 2;
-    var y = GEO_VIEWBOX / 2 - (pt[1] - centerLat) * scale;
-    return x.toFixed(2) + ',' + y.toFixed(2);
-  }).join(' L ');
-}
-
-function featureToPathData(feature, centerLat, centerLng, cosLat, scale) {
-  var geom = feature.geometry;
-  var polygons = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
-  var d = '';
-  polygons.forEach(function (poly) {
-    poly.forEach(function (ring) {
-      if (ring.length < 2) return;
-      d += 'M ' + projectRingToPoints(ring, centerLat, centerLng, cosLat, scale) + ' Z ';
-    });
-  });
-  return d.trim();
-}
-
-function makeShapeSvg() {
-  var svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('viewBox', '0 0 ' + GEO_VIEWBOX + ' ' + GEO_VIEWBOX);
-  svg.setAttribute('class', 'country-shape-svg');
-  svg.setAttribute('role', 'img');
-  return svg;
-}
-
-function renderCountryShape(container, feature, bounds) {
-  var minLat = bounds[0][0], minLng = bounds[0][1], maxLat = bounds[1][0], maxLng = bounds[1][1];
-  var centerLat = (minLat + maxLat) / 2, centerLng = (minLng + maxLng) / 2;
-  var cosLat = Math.max(Math.cos(centerLat * Math.PI / 180), 0.15);
-  var spanX = Math.max((maxLng - minLng) * cosLat, 0.05);
-  var spanY = Math.max(maxLat - minLat, 0.05);
-  var scale = (GEO_VIEWBOX * 0.86) / Math.max(spanX, spanY);
-
-  var svg = makeShapeSvg();
-  var path = document.createElementNS(SVG_NS, 'path');
-  path.setAttribute('d', featureToPathData(feature, centerLat, centerLng, cosLat, scale));
-  path.setAttribute('class', 'country-shape-path');
-  svg.appendChild(path);
-  container.replaceChildren(svg);
-}
-
-function renderCountryDot(container) {
-  var svg = makeShapeSvg();
-  var circle = document.createElementNS(SVG_NS, 'circle');
-  circle.setAttribute('cx', String(GEO_VIEWBOX / 2));
-  circle.setAttribute('cy', String(GEO_VIEWBOX / 2));
-  circle.setAttribute('r', '11');
-  circle.setAttribute('class', 'country-shape-dot');
-  svg.appendChild(circle);
-  container.replaceChildren(svg);
-}
-
-function showCountryOnMap(item) {
-  var caption = byId('mapCaption');
-  var container = byId('countryMap');
-  var iso = isoByCountry[item.country];
-  var feature = iso ? countriesGeoData.features.find(function (f) { return f.properties.A3 === iso; }) : null;
-
-  if (feature) {
-    var bounds = mainLandmassBounds(feature);
-    renderCountryShape(container, feature, bounds);
-    if (caption) caption.textContent = '📍 ' + item.country;
-  } else if (iso && fallbackCenters[iso]) {
-    renderCountryDot(container);
-    if (caption) caption.textContent = '📍 ' + item.country + ' (국토가 작아 윤곽 대신 표시로만 안내해요)';
-  } else {
-    var empty = document.createElement('div');
-    empty.className = 'country-shape-empty';
-    empty.textContent = item.country + '의 지도 정보를 찾을 수 없어요.';
-    container.replaceChildren(empty);
-    if (caption) caption.textContent = item.country;
-  }
-  highlightOnWorldMap(iso);
+  return { lng: (minLng + maxLng) / 2, lat: (minLat + maxLat) / 2 };
 }
 
 /* ---- 세계 속 위치 : 세계 모든 나라를 같은 좌표계로 한 번만 그려두고, 선택한 나라만 강조합니다.
-   위치뿐 아니라 같은 축척이라 다른 나라와의 상대적 크기 비교도 가능합니다. ---- */
+   위치뿐 아니라 같은 축척이라 다른 나라와의 상대적 크기 비교도 가능하고, 확대/축소 버튼으로
+   자세히 볼 수 있습니다(외부 지도 라이브러리·API 없이 순수 SVG viewBox 조작). ---- */
 var WORLD_SCALE = 1.9;   // 위경도 1도당 픽셀 수
 var WORLD_LAT_MAX = 85;  // 이 위도부터(북극 근처) 지도를 시작
 var WORLD_VIEW_W = 360 * WORLD_SCALE;
 var WORLD_VIEW_H = 145 * WORLD_SCALE; // 위도 85 ~ -60 범위만 사용 (남극 대륙 대부분 제외)
+var WORLD_MIN_ZOOM = 100, WORLD_MAX_ZOOM = 800, WORLD_ZOOM_STEP = 60;
 var worldPathsByIso = {};
 var worldDotsByIso = {};
+var worldFocusByIso = {};
 var activeWorldEl = null;
+var worldSvgEl = null;
+var worldZoomPercent = 100;
+var worldFocus = { x: WORLD_VIEW_W / 2, y: WORLD_VIEW_H / 2 };
 
 function lonLatToWorldXY(lng, lat) {
   var x = (lng + 180) * WORLD_SCALE;
   var y = (WORLD_LAT_MAX - lat) * WORLD_SCALE;
-  return x.toFixed(2) + ',' + y.toFixed(2);
+  return { x: x, y: y };
 }
 
 function featureToWorldPathData(feature) {
@@ -1118,11 +1039,31 @@ function featureToWorldPathData(feature) {
   polygons.forEach(function (poly) {
     poly.forEach(function (ring) {
       if (ring.length < 2) return;
-      var pts = ring.map(function (pt) { return lonLatToWorldXY(pt[0], pt[1]); }).join(' L ');
+      var pts = ring.map(function (pt) {
+        var xy = lonLatToWorldXY(pt[0], pt[1]);
+        return xy.x.toFixed(2) + ',' + xy.y.toFixed(2);
+      }).join(' L ');
       d += 'M ' + pts + ' Z ';
     });
   });
   return d.trim();
+}
+
+function updateWorldViewBox() {
+  if (!worldSvgEl) return;
+  var factor = 100 / worldZoomPercent;
+  var vw = WORLD_VIEW_W * factor;
+  var vh = WORLD_VIEW_H * factor;
+  var vx = Math.min(Math.max(worldFocus.x - vw / 2, 0), Math.max(WORLD_VIEW_W - vw, 0));
+  var vy = Math.min(Math.max(worldFocus.y - vh / 2, 0), Math.max(WORLD_VIEW_H - vh, 0));
+  worldSvgEl.setAttribute('viewBox', vx.toFixed(2) + ' ' + vy.toFixed(2) + ' ' + vw.toFixed(2) + ' ' + vh.toFixed(2));
+  var label = byId('worldZoomLabel');
+  if (label) label.textContent = worldZoomPercent + '%';
+}
+
+function zoomWorld(delta) {
+  worldZoomPercent = Math.min(WORLD_MAX_ZOOM, Math.max(WORLD_MIN_ZOOM, worldZoomPercent + delta));
+  updateWorldViewBox();
 }
 
 function buildWorldLocator() {
@@ -1133,26 +1074,31 @@ function buildWorldLocator() {
   svg.setAttribute('role', 'img');
 
   countriesGeoData.features.forEach(function (f) {
+    var iso = f.properties.A3;
     var path = document.createElementNS(SVG_NS, 'path');
     path.setAttribute('d', featureToWorldPathData(f));
     path.setAttribute('class', 'world-country-path');
     svg.appendChild(path);
-    worldPathsByIso[f.properties.A3] = path;
+    worldPathsByIso[iso] = path;
+    var center = mainLandmassCenter(f);
+    if (center) worldFocusByIso[iso] = lonLatToWorldXY(center.lng, center.lat);
   });
 
   Object.keys(fallbackCenters).forEach(function (iso) {
     var c = fallbackCenters[iso];
-    var xy = lonLatToWorldXY(c[1], c[0]).split(',');
+    var xy = lonLatToWorldXY(c[1], c[0]);
     var circle = document.createElementNS(SVG_NS, 'circle');
-    circle.setAttribute('cx', xy[0]);
-    circle.setAttribute('cy', xy[1]);
+    circle.setAttribute('cx', String(xy.x));
+    circle.setAttribute('cy', String(xy.y));
     circle.setAttribute('r', '3');
     circle.setAttribute('class', 'world-locator-dot');
     svg.appendChild(circle);
     worldDotsByIso[iso] = circle;
+    worldFocusByIso[iso] = xy;
   });
 
   container.replaceChildren(svg);
+  worldSvgEl = svg;
 }
 
 function highlightOnWorldMap(iso) {
@@ -1164,6 +1110,23 @@ function highlightOnWorldMap(iso) {
     worldDotsByIso[iso].classList.add('active');
     activeWorldEl = worldDotsByIso[iso];
   }
+  if (iso && worldFocusByIso[iso]) worldFocus = worldFocusByIso[iso];
+  updateWorldViewBox();
+}
+
+function showCountryOnMap(item) {
+  var caption = byId('mapCaption');
+  var iso = isoByCountry[item.country];
+  var hasShape = iso && countriesGeoData.features.some(function (f) { return f.properties.A3 === iso; });
+
+  if (hasShape) {
+    if (caption) caption.textContent = '📍 ' + item.country;
+  } else if (iso && fallbackCenters[iso]) {
+    if (caption) caption.textContent = '📍 ' + item.country + ' (국토가 작아 점으로 표시돼요)';
+  } else if (caption) {
+    caption.textContent = item.country + '의 지도 정보를 찾을 수 없어요.';
+  }
+  highlightOnWorldMap(iso);
 }
 
 buildWorldLocator();
@@ -1304,6 +1267,8 @@ prevPageBtnEl.addEventListener('click', function () { goPage(-1); });
 nextPageBtnEl.addEventListener('click', function () { goPage(1); });
 byId('zoomOutBtn').addEventListener('click', function () { zoomPdf(-15); });
 byId('zoomInBtn').addEventListener('click', function () { zoomPdf(15); });
+byId('worldZoomOutBtn').addEventListener('click', function () { zoomWorld(-WORLD_ZOOM_STEP); });
+byId('worldZoomInBtn').addEventListener('click', function () { zoomWorld(WORLD_ZOOM_STEP); });
 
 renderPdfState();
 })();
