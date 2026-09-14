@@ -304,8 +304,9 @@
   .filter-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
   .filter-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .filter-label {
-    font-size: 11px; color: var(--text-soft); font-family: 'Jua', sans-serif;
-    white-space: nowrap;
+    font-size: 12px; font-weight: 700; color: var(--primary);
+    font-family: 'Jua', sans-serif; white-space: nowrap;
+    background: var(--active-bg); border-radius: 10px; padding: 5px 10px;
   }
   .pill-btn {
     padding: 7px 15px; border-radius: 18px; border: 1.5px solid var(--border);
@@ -338,20 +339,6 @@
   .medal.m1 { background: var(--gold); color: #4a3200; }
   .medal.m2 { background: var(--silver); color: #2b3538; }
   .medal.m3 { background: var(--bronze); color: #3a2005; }
-
-  @media (max-width: 900px) {
-    .app-body { padding: 20px 16px 40px; }
-    .site-head { padding: 14px 16px; }
-    .list-layout { flex-direction: column; }
-    .continent-side { flex-direction: row; flex-wrap: wrap; flex-basis: auto; }
-    .cnt-btn { flex: 1 1 auto; }
-    .country-list-card { flex-basis: auto; width: 100%; }
-    .rank-grid { flex-direction: column; }
-    .rank-grid .rank-box { flex: 1 1 auto; }
-    .pdf-mat { padding: 12px; }
-    .pdf-arrow.left { left: -2px; }
-    .pdf-arrow.right { right: -2px; }
-  }
 </style>
 </head>
 <body>
