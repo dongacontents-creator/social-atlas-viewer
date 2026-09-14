@@ -6,9 +6,9 @@
 - `pdfpage-1.png`, `pdfpage-2.png` — `book.pdf`에서 미리 렌더링한 쪽 이미지 (뷰어가 실제로 불러오는 파일)
 - `book.pdf` — 원본 부도 PDF (보관용)
 - `countries.geo.json` — 국가 경계선 데이터. 기본은 [`@geo-maps/countries-land-10km`](https://www.npmjs.com/package/@geo-maps/countries-land-10km)이고, 그 해상도에서는
-  빠지는 바티칸·모나코·산마리노·몰디브·세인트키츠 네비스·나우루·투발루 7개국만 같은
-  저작자의 [`@geo-maps/countries-land-10m`](https://www.npmjs.com/package/@geo-maps/countries-land-10m)에서 해당 폴리곤만 추려 보충했습니다
-  (둘 다 MIT License, 라이선스 전문은 `countries.geo.LICENSE.txt` 참고)
+  빠지는 바티칸·모나코·산마리노·몰디브·세인트키츠 네비스·나우루·투발루 7개국과 대한민국의
+  울릉도(부속 섬 포함)를 같은 저작자의 [`@geo-maps/countries-land-10m`](https://www.npmjs.com/package/@geo-maps/countries-land-10m)에서
+  해당 폴리곤만 추려 보충했습니다 (둘 다 MIT License, 라이선스 전문은 `countries.geo.LICENSE.txt` 참고)
 
 ## 지도 기능
 
@@ -16,9 +16,13 @@
 스캐너가 벤더링된 Leaflet의 태그 선택자·`!important` 등을 위반으로 잡아내
 걷어냈습니다). 국가를 선택하면 실제 국경 윤곽선이 강조색으로 표시되고, 그
 나라 크기에 맞춰 자동으로 확대되며, +/- 버튼으로 더 확대·축소할 수 있습니다.
-195개국 전부 점이 아니라 실제 국경 윤곽으로 표시됩니다. 독도·울릉도는 국경
-데이터에 폴리곤이 없을 만큼 작아 대한민국 선택 시 실제 면적 비율을 반영한
-점으로 별도 표시합니다.
+195개국 전부 점이 아니라 실제 국경 윤곽으로 표시됩니다.
+
+독도는 10km·10m 해상도 국경 데이터셋 어디에도 폴리곤이 없는 암초라(오픈소스
+경계 데이터셋은 이 정도로 작은 지형은 대부분 담지 않습니다), 실측 윤곽선 대신
+동도의 실제 좌표를 중심으로 대략적인 섬 모양을 그려 대한민국 선택 시 함께
+표시합니다 — 위치는 정확하지만 모양은 측량 데이터가 아닌 예시적 형태입니다
+(`index.html` 안 `DOKDO_RING` 참고).
 
 ## 배포
 
