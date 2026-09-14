@@ -316,12 +316,13 @@
   .cont-link.active { color: #fff; background: var(--accent); border-color: var(--accent); }
 
   table.rank-table { width: 100%; border-collapse: collapse; font-size: 14.5px; table-layout: fixed; }
-  .rank-table th { text-align: center; padding: 8px 6px; font-size: 12px; color: var(--text-soft); border-bottom: 2px solid var(--border); letter-spacing: .3px; white-space: nowrap; }
+  .rank-table th { text-align: center; padding: 8px 6px; font-size: 12px; color: var(--text-soft); border-bottom: 2px solid var(--border); letter-spacing: .3px; }
   .rank-table td { padding: 11px 6px; border-bottom: 1px solid var(--border); text-align: center; }
   .rank-table tbody tr:hover { background: var(--surface-soft); }
   .rank-table td.num { font-variant-numeric: tabular-nums; font-weight: 700; }
   .rank-table th:first-child, .rank-table td:first-child { width: 22%; }
   .rank-table th:last-child, .rank-table td:last-child { width: 36%; }
+  .rank-table th:not(:first-child), .rank-table td:not(:first-child) { border-left: 1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -445,7 +446,7 @@
             </div>
             <div class="cont-links" id="pop-high-cont-select"></div>
             <table class="rank-table">
-              <thead><tr><th>순위</th><th>국가</th><th style="text-align:right;">인구</th></tr></thead>
+              <thead><tr><th>순위</th><th>국가</th><th>인구(천 명)</th></tr></thead>
               <tbody id="pop-high-tbody"></tbody>
             </table>
           </div>
@@ -468,7 +469,7 @@
             </div>
             <div class="cont-links" id="pop-low-cont-select"></div>
             <table class="rank-table">
-              <thead><tr><th>순위</th><th>국가</th><th style="text-align:right;">인구</th></tr></thead>
+              <thead><tr><th>순위</th><th>국가</th><th>인구(천 명)</th></tr></thead>
               <tbody id="pop-low-tbody"></tbody>
             </table>
           </div>
@@ -503,7 +504,7 @@
             </div>
             <div class="cont-links" id="dens-high-cont-select"></div>
             <table class="rank-table">
-              <thead><tr><th>순위</th><th>국가</th><th style="text-align:right;">인구밀도</th></tr></thead>
+              <thead><tr><th>순위</th><th>국가</th><th>인구 밀도(명/㎢)</th></tr></thead>
               <tbody id="dens-high-tbody"></tbody>
             </table>
           </div>
@@ -526,7 +527,7 @@
             </div>
             <div class="cont-links" id="dens-low-cont-select"></div>
             <table class="rank-table">
-              <thead><tr><th>순위</th><th>국가</th><th style="text-align:right;">인구밀도</th></tr></thead>
+              <thead><tr><th>순위</th><th>국가</th><th>인구 밀도(명/㎢)</th></tr></thead>
               <tbody id="dens-low-tbody"></tbody>
             </table>
           </div>
