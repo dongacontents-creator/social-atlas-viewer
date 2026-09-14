@@ -301,7 +301,12 @@
     display: flex; align-items: center; gap: 8px;
   }
   .rank-body { padding: 16px 18px 20px; }
-  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filter-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filter-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .filter-label {
+    font-size: 11px; color: var(--text-soft); font-family: 'Jua', sans-serif;
+    white-space: nowrap;
+  }
   .pill-btn {
     padding: 7px 15px; border-radius: 18px; border: 1.5px solid var(--border);
     background: var(--surface); color: var(--text-soft); font-size: 12.5px;
@@ -342,6 +347,7 @@
     .cnt-btn { flex: 1 1 auto; }
     .country-list-card { flex-basis: auto; width: 100%; }
     .rank-grid { flex-direction: column; }
+    .rank-grid .rank-box { flex: 1 1 auto; }
     .pdf-mat { padding: 12px; }
     .pdf-arrow.left { left: -2px; }
     .pdf-arrow.right { right: -2px; }
@@ -456,10 +462,16 @@
           <h3>🔼 인구가 많은 나라</h3>
           <div class="rank-body">
             <div class="filter-row">
-              <button class="pill-btn active" id="pop-high-all" onclick="setPopFilter('high', 'type', 'all')">전체</button>
-              <button class="pill-btn" id="pop-high-cont" onclick="setPopFilter('high', 'type', 'cont')">대륙별 보기</button>
-              <button class="pill-btn active" id="pop-high-5" onclick="setPopFilter('high', 'limit', 5)">5개국</button>
-              <button class="pill-btn" id="pop-high-10" onclick="setPopFilter('high', 'limit', 10)">10개국</button>
+              <div class="filter-group">
+                <span class="filter-label">대륙</span>
+                <button class="pill-btn active" id="pop-high-all" onclick="setPopFilter('high', 'type', 'all')">전체</button>
+                <button class="pill-btn" id="pop-high-cont" onclick="setPopFilter('high', 'type', 'cont')">대륙별 보기</button>
+              </div>
+              <div class="filter-group">
+                <span class="filter-label">보기</span>
+                <button class="pill-btn active" id="pop-high-5" onclick="setPopFilter('high', 'limit', 5)">5개국</button>
+                <button class="pill-btn" id="pop-high-10" onclick="setPopFilter('high', 'limit', 10)">10개국</button>
+              </div>
             </div>
             <div class="cont-links" id="pop-high-cont-select"></div>
             <table class="rank-table">
@@ -473,10 +485,16 @@
           <h3>🔽 인구가 적은 나라</h3>
           <div class="rank-body">
             <div class="filter-row">
-              <button class="pill-btn active" id="pop-low-all" onclick="setPopFilter('low', 'type', 'all')">전체</button>
-              <button class="pill-btn" id="pop-low-cont" onclick="setPopFilter('low', 'type', 'cont')">대륙별 보기</button>
-              <button class="pill-btn active" id="pop-low-5" onclick="setPopFilter('low', 'limit', 5)">5개국</button>
-              <button class="pill-btn" id="pop-low-10" onclick="setPopFilter('low', 'limit', 10)">10개국</button>
+              <div class="filter-group">
+                <span class="filter-label">대륙</span>
+                <button class="pill-btn active" id="pop-low-all" onclick="setPopFilter('low', 'type', 'all')">전체</button>
+                <button class="pill-btn" id="pop-low-cont" onclick="setPopFilter('low', 'type', 'cont')">대륙별 보기</button>
+              </div>
+              <div class="filter-group">
+                <span class="filter-label">보기</span>
+                <button class="pill-btn active" id="pop-low-5" onclick="setPopFilter('low', 'limit', 5)">5개국</button>
+                <button class="pill-btn" id="pop-low-10" onclick="setPopFilter('low', 'limit', 10)">10개국</button>
+              </div>
             </div>
             <div class="cont-links" id="pop-low-cont-select"></div>
             <table class="rank-table">
@@ -502,10 +520,16 @@
           <h3>🔼 인구 밀도가 높은 나라</h3>
           <div class="rank-body">
             <div class="filter-row">
-              <button class="pill-btn active" id="dens-high-all" onclick="setDensFilter('high', 'type', 'all')">전체</button>
-              <button class="pill-btn" id="dens-high-cont" onclick="setDensFilter('high', 'type', 'cont')">대륙별 보기</button>
-              <button class="pill-btn active" id="dens-high-5" onclick="setDensFilter('high', 'limit', 5)">5개국</button>
-              <button class="pill-btn" id="dens-high-10" onclick="setDensFilter('high', 'limit', 10)">10개국</button>
+              <div class="filter-group">
+                <span class="filter-label">대륙</span>
+                <button class="pill-btn active" id="dens-high-all" onclick="setDensFilter('high', 'type', 'all')">전체</button>
+                <button class="pill-btn" id="dens-high-cont" onclick="setDensFilter('high', 'type', 'cont')">대륙별 보기</button>
+              </div>
+              <div class="filter-group">
+                <span class="filter-label">보기</span>
+                <button class="pill-btn active" id="dens-high-5" onclick="setDensFilter('high', 'limit', 5)">5개국</button>
+                <button class="pill-btn" id="dens-high-10" onclick="setDensFilter('high', 'limit', 10)">10개국</button>
+              </div>
             </div>
             <div class="cont-links" id="dens-high-cont-select"></div>
             <table class="rank-table">
@@ -519,10 +543,16 @@
           <h3>🔽 인구 밀도가 낮은 나라</h3>
           <div class="rank-body">
             <div class="filter-row">
-              <button class="pill-btn active" id="dens-low-all" onclick="setDensFilter('low', 'type', 'all')">전체</button>
-              <button class="pill-btn" id="dens-low-cont" onclick="setDensFilter('low', 'type', 'cont')">대륙별 보기</button>
-              <button class="pill-btn active" id="dens-low-5" onclick="setDensFilter('low', 'limit', 5)">5개국</button>
-              <button class="pill-btn" id="dens-low-10" onclick="setDensFilter('low', 'limit', 10)">10개국</button>
+              <div class="filter-group">
+                <span class="filter-label">대륙</span>
+                <button class="pill-btn active" id="dens-low-all" onclick="setDensFilter('low', 'type', 'all')">전체</button>
+                <button class="pill-btn" id="dens-low-cont" onclick="setDensFilter('low', 'type', 'cont')">대륙별 보기</button>
+              </div>
+              <div class="filter-group">
+                <span class="filter-label">보기</span>
+                <button class="pill-btn active" id="dens-low-5" onclick="setDensFilter('low', 'limit', 5)">5개국</button>
+                <button class="pill-btn" id="dens-low-10" onclick="setDensFilter('low', 'limit', 10)">10개국</button>
+              </div>
             </div>
             <div class="cont-links" id="dens-low-cont-select"></div>
             <table class="rank-table">
