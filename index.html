@@ -6,133 +6,152 @@
 <title>사회과 부도 보기 · 통계 자료 검색하기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
   :root {
-    /* -- warm atlas-paper palette (light) -- */
-    --bg: #f5efdf;
-    --bg-wash: #efe6cf;
-    --surface: #fffdf7;
-    --surface-soft: #ecf5f3;
-    --text: #1d2e30;
-    --text-soft: #63767a;
-    --primary: #1c7691;
-    --primary-deep: #0c3a4d;
+    /* -- clean product palette (light) -- */
+    --bg: #eef1f6;
+    --surface: #ffffff;
+    --surface-soft: #f4f6fa;
+    --text: #191d2b;
+    --text-soft: #6b7280;
+    --primary: #2f6fed;
     --primary-contrast: #ffffff;
-    --accent: #d9622f;
-    --accent-soft: #f8ddc7;
-    --border: #e4dbc3;
-    --active-bg: #d7eef1;
-    --shadow: 0 10px 28px rgba(12,58,77,.12);
-    --shadow-sm: 0 3px 10px rgba(12,58,77,.08);
+    --accent: #ff6b35;
+    --accent-soft: #ffe4d6;
+    --border: #e3e6ec;
+    --active-bg: #e8f0fe;
+    --shadow: 0 20px 45px rgba(20,30,60,.10);
+    --shadow-sm: 0 3px 10px rgba(20,30,60,.07);
 
     /* continent hues (used consistently, not decorative) */
-    --c-asia: #d9723f;
-    --c-europe: #4f8fb0;
-    --c-africa: #c99a3a;
-    --c-namerica: #5f9e73;
-    --c-samerica: #a2638f;
-    --c-oceania: #3fa6a1;
+    --c-asia: #ef7b45;
+    --c-europe: #4a8fe0;
+    --c-africa: #d1a13a;
+    --c-namerica: #4caf7d;
+    --c-samerica: #b0609a;
+    --c-oceania: #35b0ad;
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0d1b20;
-      --bg-wash: #0a1519;
-      --surface: #16282d;
-      --surface-soft: #1b3136;
-      --text: #eef4f1;
-      --text-soft: #9db0b3;
-      --primary: #5cb7d4;
-      --primary-deep: #0a2430;
-      --primary-contrast: #04141a;
-      --accent: #ef8a5a;
-      --accent-soft: #3a2417;
-      --border: #274044;
-      --active-bg: #1e3d42;
-      --shadow: 0 10px 28px rgba(0,0,0,.45);
+      --bg: #10131b;
+      --surface: #1b202c;
+      --surface-soft: #222838;
+      --text: #eef1f7;
+      --text-soft: #9aa2b8;
+      --primary: #5b8cff;
+      --primary-contrast: #ffffff;
+      --accent: #ff8659;
+      --accent-soft: #3a2418;
+      --border: #2a3140;
+      --active-bg: #1f2c4d;
+      --shadow: 0 20px 45px rgba(0,0,0,.5);
       --shadow-sm: 0 3px 10px rgba(0,0,0,.35);
+      --c-asia: #ff8f5e;
+      --c-europe: #6aa3ff;
+      --c-africa: #e0b659;
+      --c-namerica: #6cc79a;
+      --c-samerica: #cf85ba;
+      --c-oceania: #56d0cc;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0d1b20;
-    --bg-wash: #0a1519;
-    --surface: #16282d;
-    --surface-soft: #1b3136;
-    --text: #eef4f1;
-    --text-soft: #9db0b3;
-    --primary: #5cb7d4;
-    --primary-deep: #0a2430;
-    --primary-contrast: #04141a;
-    --accent: #ef8a5a;
-    --accent-soft: #3a2417;
-    --border: #274044;
-    --active-bg: #1e3d42;
-    --shadow: 0 10px 28px rgba(0,0,0,.45);
+    --bg: #10131b;
+    --surface: #1b202c;
+    --surface-soft: #222838;
+    --text: #eef1f7;
+    --text-soft: #9aa2b8;
+    --primary: #5b8cff;
+    --primary-contrast: #ffffff;
+    --accent: #ff8659;
+    --accent-soft: #3a2418;
+    --border: #2a3140;
+    --active-bg: #1f2c4d;
+    --shadow: 0 20px 45px rgba(0,0,0,.5);
     --shadow-sm: 0 3px 10px rgba(0,0,0,.35);
+    --c-asia: #ff8f5e;
+    --c-europe: #6aa3ff;
+    --c-africa: #e0b659;
+    --c-namerica: #6cc79a;
+    --c-samerica: #cf85ba;
+    --c-oceania: #56d0cc;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
-    font-family: 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     background: var(--bg);
-    background-image:
-      radial-gradient(circle at 100% 0%, var(--bg-wash) 0%, transparent 45%),
-      radial-gradient(circle at 0% 100%, var(--bg-wash) 0%, transparent 40%);
-    background-attachment: fixed;
     color: var(--text);
+    padding: 0 16px;
   }
-  h1, h2, h3, .display-face { font-family: 'Jua', 'Apple SD Gothic Neo', sans-serif; }
-
+  h1, h2, h3 { font-weight: 900; }
   button { font-family: inherit; }
+
+  /* ---- 앱 전체를 감싸는 카드형 셸 ---- */
+  .app-shell {
+    max-width: 1320px;
+    margin: 32px auto;
+    background: var(--surface);
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
 
   /* ---- 사이트 헤더 ---- */
   .site-head {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px 32px;
-    background: var(--primary-deep);
-    color: var(--primary-contrast);
+    gap: 14px;
+    padding: 24px 36px 18px;
+    background: var(--surface);
   }
   .site-head .globe {
-    width: 34px; height: 34px; border-radius: 50%;
+    width: 42px; height: 42px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-    background: var(--accent);
+    font-size: 20px;
+    background: var(--primary);
+    box-shadow: 0 6px 14px rgba(47,111,237,.28);
     flex: none;
   }
   .site-head h1 {
-    font-size: 18px;
-    letter-spacing: .3px;
+    font-size: 21px;
+    letter-spacing: -.2px;
+    color: var(--text);
   }
   .site-head p {
-    font-size: 12px;
-    opacity: .72;
-    font-family: 'Gowun Dodum', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-soft);
+    margin-top: 2px;
   }
 
-  /* ---- 최상단 메인 탭 ---- */
-  .main-nav { display: flex; width: 100%; gap: 2px; background: var(--primary-deep); }
+  /* ---- 최상단 메인 탭 (둥근 탭이 콘텐츠 카드에 이어지는 느낌) ---- */
+  .main-nav {
+    display: flex; gap: 6px;
+    background: var(--surface-soft);
+    padding: 10px 36px 0;
+    border-top: 1px solid var(--border);
+  }
   .nav-btn {
-    flex: 1; border: none; padding: 18px 10px; font-size: 17px;
-    font-family: 'Jua', sans-serif; letter-spacing: .2px;
-    cursor: pointer; color: rgba(255,255,255,.55);
+    border: none; padding: 14px 24px; font-size: 15.5px; font-weight: 700;
+    letter-spacing: -.1px;
+    cursor: pointer; color: var(--text-soft);
     background: transparent;
-    border-bottom: 4px solid transparent;
+    border-radius: 16px 16px 0 0;
     transition: color .15s ease, background .15s ease;
   }
-  .nav-btn:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.05); }
+  .nav-btn:hover { color: var(--primary); }
   .nav-btn.active {
-    color: #ffffff;
+    color: var(--primary-contrast);
     background: var(--primary);
-    border-bottom-color: var(--accent);
+    box-shadow: 0 -6px 16px rgba(47,111,237,.18);
   }
 
-  .app-body { padding: 26px 32px 52px; min-height: calc(100vh - 122px); max-width: 1320px; margin: 0 auto; }
+  .app-body { padding: 30px 36px 46px; }
   .view-section { display: none; }
   .view-section.active { display: block; }
 
@@ -180,7 +199,6 @@
   .pdf-zoom-row {
     display: flex; align-items: center; justify-content: center; gap: 16px;
     margin-top: 18px;
-    font-family: 'Jua', sans-serif;
   }
   .zoom-btn {
     width: 38px; height: 38px; border-radius: 50%; border: none;
@@ -205,7 +223,7 @@
   .sub-btn {
     padding: 11px 22px; border-radius: 22px; border: 1.5px solid var(--border);
     background: var(--surface); color: var(--text-soft);
-    font-family: 'Jua', sans-serif; font-size: 14px; cursor: pointer;
+    font-weight: 700; font-size: 14px; cursor: pointer;
     transition: all .14s ease;
   }
   .sub-btn:hover { border-color: var(--primary); color: var(--primary); }
@@ -229,7 +247,7 @@
     position: relative;
     padding: 13px 14px 13px 34px; border-radius: 14px; border: 1.5px solid var(--border);
     background: var(--surface); color: var(--text); text-align: left;
-    font-family: 'Jua', sans-serif; font-size: 15px; cursor: pointer;
+    font-weight: 700; font-size: 15px; cursor: pointer;
     transition: all .14s ease;
   }
   .cnt-btn::before {
@@ -273,14 +291,14 @@
     border-radius: 14px; flex: 1; min-height: 320px;
     display: flex; flex-direction: column; overflow: hidden;
   }
-  .country-map { flex: 1; min-height: 280px; width: 100%; background: #dbe6e0; }
+  .country-map { flex: 1; min-height: 280px; width: 100%; background: var(--surface-soft); }
   .map-caption {
-    padding: 10px 16px; font-size: 13px; font-family: 'Jua', sans-serif;
+    padding: 10px 16px; font-size: 13px; font-weight: 700;
     color: var(--primary); background: var(--surface); border-top: 1px solid var(--border);
     display: flex; align-items: center; gap: 6px;
   }
   /* Leaflet 컨트롤은 지도 타일 위에 얹히므로 라이트/다크와 무관하게 고정 스타일 유지 */
-  .leaflet-container { font-family: 'Gowun Dodum', sans-serif; }
+  .leaflet-container { font-family: 'Noto Sans KR', sans-serif; }
 
   /* ---- 인구 / 인구 밀도 순위 ---- */
   .rank-grid { display: flex; gap: 20px; }
@@ -296,13 +314,13 @@
   .filter-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .filter-label {
     font-size: 12px; font-weight: 700; color: var(--primary);
-    font-family: 'Jua', sans-serif; white-space: nowrap;
+    white-space: nowrap;
     background: var(--active-bg); border-radius: 10px; padding: 5px 10px;
   }
   .pill-btn {
     padding: 7px 15px; border-radius: 18px; border: 1.5px solid var(--border);
     background: var(--surface); color: var(--text-soft); font-size: 12.5px;
-    font-family: 'Jua', sans-serif; cursor: pointer; transition: all .14s ease;
+    font-weight: 600; cursor: pointer; transition: all .14s ease;
   }
   .pill-btn:hover { border-color: var(--primary); }
   .pill-btn.active { background: var(--active-bg); border-color: var(--primary); color: var(--primary); font-weight: 700; }
@@ -310,7 +328,7 @@
   .cont-links.show { display: flex; }
   .cont-link {
     background: var(--surface); border: 1.5px solid var(--border); cursor: pointer;
-    color: var(--text-soft); font-size: 12.5px; font-family: 'Jua', sans-serif;
+    color: var(--text-soft); font-size: 12.5px; font-weight: 600;
     padding: 6px 12px; border-radius: 14px;
   }
   .cont-link.active { color: #fff; background: var(--accent); border-color: var(--accent); }
@@ -327,6 +345,7 @@
 </head>
 <body>
 
+<div class="app-shell">
 <header class="site-head">
   <div class="globe">🌍</div>
   <div>
@@ -536,6 +555,7 @@
     </div>
 
   </section>
+</div>
 </div>
 
 <script>
