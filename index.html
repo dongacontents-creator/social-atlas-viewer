@@ -1022,9 +1022,18 @@ var worldPathsByIso = {};
 var worldDotsByIso = {};
 var worldFocusByIso = {};
 var activeWorldEl = null;
+var activeExtraDots = [];
 var worldSvgEl = null;
 var worldZoomPercent = 100;
 var worldFocus = { x: WORLD_VIEW_W / 2, y: WORLD_VIEW_H / 2 };
+
+/* 독도·울릉도는 10km 해상도 국경 데이터에 폴리곤이 없을 만큼 작아서, 소속 국가(대한민국)를
+   선택했을 때 함께 강조되는 점으로 별도 표시합니다. */
+var extraTerritoryDots = [
+  { iso: 'KOR', name: '독도', lng: 131.87, lat: 37.24 },
+  { iso: 'KOR', name: '울릉도', lng: 130.9, lat: 37.48 }
+];
+var extraDotsByIso = {};
 
 function lonLatToWorldXY(lng, lat) {
   var x = (lng + 180) * WORLD_SCALE;
@@ -1097,18 +1106,38 @@ function buildWorldLocator() {
     worldFocusByIso[iso] = xy;
   });
 
+  extraTerritoryDots.forEach(function (t) {
+    var xy = lonLatToWorldXY(t.lng, t.lat);
+    var circle = document.createElementNS(SVG_NS, 'circle');
+    circle.setAttribute('cx', String(xy.x));
+    circle.setAttribute('cy', String(xy.y));
+    circle.setAttribute('r', '0.8');
+    circle.setAttribute('class', 'world-locator-dot');
+    svg.appendChild(circle);
+    if (!extraDotsByIso[t.iso]) extraDotsByIso[t.iso] = [];
+    extraDotsByIso[t.iso].push(circle);
+  });
+
   container.replaceChildren(svg);
   worldSvgEl = svg;
 }
 
 function highlightOnWorldMap(iso) {
   if (activeWorldEl) { activeWorldEl.classList.remove('active'); activeWorldEl = null; }
+  activeExtraDots.forEach(function (el) { el.classList.remove('active'); });
+  activeExtraDots = [];
   if (iso && worldPathsByIso[iso]) {
     worldPathsByIso[iso].classList.add('active');
     activeWorldEl = worldPathsByIso[iso];
   } else if (iso && worldDotsByIso[iso]) {
     worldDotsByIso[iso].classList.add('active');
     activeWorldEl = worldDotsByIso[iso];
+  }
+  if (iso && extraDotsByIso[iso]) {
+    extraDotsByIso[iso].forEach(function (el) {
+      el.classList.add('active');
+      activeExtraDots.push(el);
+    });
   }
   if (iso && worldFocusByIso[iso]) worldFocus = worldFocusByIso[iso];
   updateWorldViewBox();
@@ -1120,7 +1149,7 @@ function showCountryOnMap(item) {
   var hasShape = iso && countriesGeoData.features.some(function (f) { return f.properties.A3 === iso; });
 
   if (hasShape) {
-    if (caption) caption.textContent = '📍 ' + item.country;
+    if (caption) caption.textContent = '📍 ' + item.country + (extraDotsByIso[iso] ? ' (독도·울릉도 포함)' : '');
   } else if (iso && fallbackCenters[iso]) {
     if (caption) caption.textContent = '📍 ' + item.country + ' (국토가 작아 점으로 표시돼요)';
   } else if (caption) {
