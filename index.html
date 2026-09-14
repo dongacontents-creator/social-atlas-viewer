@@ -1028,10 +1028,11 @@ var worldZoomPercent = 100;
 var worldFocus = { x: WORLD_VIEW_W / 2, y: WORLD_VIEW_H / 2 };
 
 /* 독도·울릉도는 10km 해상도 국경 데이터에 폴리곤이 없을 만큼 작아서, 소속 국가(대한민국)를
-   선택했을 때 함께 강조되는 점으로 별도 표시합니다. */
+   선택했을 때 함께 강조되는 점으로 별도 표시합니다. 점 크기는 실제 면적 비율(울릉도 약
+   72.9㎢, 독도 약 0.19㎢)을 반영해 울릉도를 더 크게, 독도를 더 작게 그립니다. */
 var extraTerritoryDots = [
-  { iso: 'KOR', name: '독도', lng: 131.87, lat: 37.24 },
-  { iso: 'KOR', name: '울릉도', lng: 130.9, lat: 37.48 }
+  { iso: 'KOR', name: '독도', lng: 131.87, lat: 37.24, r: 0.12 },
+  { iso: 'KOR', name: '울릉도', lng: 130.9, lat: 37.48, r: 0.28 }
 ];
 var extraDotsByIso = {};
 
@@ -1111,7 +1112,7 @@ function buildWorldLocator() {
     var circle = document.createElementNS(SVG_NS, 'circle');
     circle.setAttribute('cx', String(xy.x));
     circle.setAttribute('cy', String(xy.y));
-    circle.setAttribute('r', '0.8');
+    circle.setAttribute('r', String(t.r));
     circle.setAttribute('class', 'world-locator-dot');
     svg.appendChild(circle);
     if (!extraDotsByIso[t.iso]) extraDotsByIso[t.iso] = [];
