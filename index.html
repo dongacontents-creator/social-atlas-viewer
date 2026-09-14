@@ -23,9 +23,6 @@
     --primary-contrast: #ffffff;
     --accent: #d9622f;
     --accent-soft: #f8ddc7;
-    --gold: #dba53c;
-    --silver: #b7c3c6;
-    --bronze: #c68a58;
     --border: #e4dbc3;
     --active-bg: #d7eef1;
     --shadow: 0 10px 28px rgba(12,58,77,.12);
@@ -53,9 +50,6 @@
       --primary-contrast: #04141a;
       --accent: #ef8a5a;
       --accent-soft: #3a2417;
-      --gold: #edc06a;
-      --silver: #93a3a6;
-      --bronze: #c99566;
       --border: #274044;
       --active-bg: #1e3d42;
       --shadow: 0 10px 28px rgba(0,0,0,.45);
@@ -74,9 +68,6 @@
     --primary-contrast: #04141a;
     --accent: #ef8a5a;
     --accent-soft: #3a2417;
-    --gold: #edc06a;
-    --silver: #93a3a6;
-    --bronze: #c99566;
     --border: #274044;
     --active-bg: #1e3d42;
     --shadow: 0 10px 28px rgba(0,0,0,.45);
@@ -324,21 +315,13 @@
   }
   .cont-link.active { color: #fff; background: var(--accent); border-color: var(--accent); }
 
-  table.rank-table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
-  .rank-table th { text-align: left; padding: 8px 6px; font-size: 12px; color: var(--text-soft); border-bottom: 2px solid var(--border); letter-spacing: .3px; white-space: nowrap; }
-  .rank-table td { padding: 11px 6px; border-bottom: 1px solid var(--border); }
+  table.rank-table { width: 100%; border-collapse: collapse; font-size: 14.5px; table-layout: fixed; }
+  .rank-table th { text-align: center; padding: 8px 6px; font-size: 12px; color: var(--text-soft); border-bottom: 2px solid var(--border); letter-spacing: .3px; white-space: nowrap; }
+  .rank-table td { padding: 11px 6px; border-bottom: 1px solid var(--border); text-align: center; }
   .rank-table tbody tr:hover { background: var(--surface-soft); }
-  .rank-table td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
-  .rank-table td.rank-cell { width: 34px; }
-  .medal {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 24px; height: 24px; border-radius: 50%;
-    font-family: 'Jua', sans-serif; font-size: 12px; color: #fff;
-    background: var(--text-soft);
-  }
-  .medal.m1 { background: var(--gold); color: #4a3200; }
-  .medal.m2 { background: var(--silver); color: #2b3538; }
-  .medal.m3 { background: var(--bronze); color: #3a2005; }
+  .rank-table td.num { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .rank-table th:first-child, .rank-table td:first-child { width: 22%; }
+  .rank-table th:last-child, .rank-table td:last-child { width: 36%; }
 </style>
 </head>
 <body>
@@ -560,10 +543,6 @@ const rawData = [{"continent": "아시아", "country": "대한민국(남한)", "
 const continents = ["아시아", "유럽", "아프리카", "북아메리카", "남아메리카", "오세아니아"];
 
 function fmt(n) { return Number(n).toLocaleString(undefined, {maximumFractionDigits: 4}); }
-function medalHtml(rank) {
-  if (rank <= 3) return `<span class="medal m${rank}">${rank}</span>`;
-  return rank;
-}
 
 /* ============ 메인 탭 / 서브 탭 전환 ============ */
 function switchMainTab(tab) {
@@ -837,7 +816,7 @@ function renderPopTable(side) {
   arr.sort((a, b) => side === 'high' ? b.pop - a.pop : a.pop - b.pop);
   const sliced = arr.slice(0, st.limit);
   document.getElementById(`pop-${side}-tbody`).innerHTML = sliced.map((d, i) => `
-    <tr><td class="rank-cell">${medalHtml(i+1)}</td><td>${d.country}</td><td class="num">${fmt(d.pop)}</td></tr>
+    <tr><td>${i+1}</td><td>${d.country}</td><td class="num">${fmt(d.pop)}</td></tr>
   `).join('');
 }
 
@@ -857,7 +836,7 @@ function renderDensTable(side) {
   arr.sort((a, b) => side === 'high' ? b.density - a.density : a.density - b.density);
   const sliced = arr.slice(0, st.limit);
   document.getElementById(`dens-${side}-tbody`).innerHTML = sliced.map((d, i) => `
-    <tr><td class="rank-cell">${medalHtml(i+1)}</td><td>${d.country}</td><td class="num">${fmt(d.density)}</td></tr>
+    <tr><td>${i+1}</td><td>${d.country}</td><td class="num">${fmt(d.density)}</td></tr>
   `).join('');
 }
 
